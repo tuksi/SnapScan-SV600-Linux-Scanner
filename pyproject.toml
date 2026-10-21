@@ -1,0 +1,40 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "sv600-linux"
+dynamic = ["version"]
+description = "ScanSnap SV600 scanner for Linux: USB scanning, geometric correction, object splitting, GUI"
+license = "PolyForm-Noncommercial-1.0.0"
+license-files = ["LICENSE", "THIRD_PARTY_LICENSES.md", "licenses/*.txt"]
+requires-python = ">=3.11"
+dependencies = [
+    "numpy",
+    "opencv-python-headless",
+    "pillow",
+    "pyusb",
+    "libusb-package",
+    "PySide6-Essentials",
+]
+
+[project.urls]
+Homepage = "https://github.com/tuksi/SnapScan-SV600-Linux-Scanner"
+
+[project.optional-dependencies]
+calibration = ["scipy"]
+
+[project.scripts]
+sv600 = "sv600.__main__:main"
+
+[project.gui-scripts]
+sv600-gui = "sv600.gui:main"
+
+[tool.setuptools]
+packages = ["sv600"]
+
+[tool.setuptools.dynamic]
+version = {attr = "sv600.__version__"}
+
+[tool.setuptools.package-data]
+sv600 = ["data/*.json", "data/*.toml", "data/*.png", "data/*.desktop"]

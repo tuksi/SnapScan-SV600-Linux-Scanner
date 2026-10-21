@@ -1,0 +1,10 @@
+#!/usr/bin/env python3
+"""Split/straighten objects in a corrected scan (wrapper; the code lives in the sv600 package)."""
+import os
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from sv600.cli import crop_main  # noqa: E402
+
+if __name__ == "__main__":
+    crop_main()

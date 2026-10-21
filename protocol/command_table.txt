@@ -1,0 +1,125 @@
+0x001 FJ_TEST_UNIT_READY               ret=0x0 flags=0x0000 len= 6 cdb=00 00 00 00 00 00
+0x002 FJ_RESERVE                       ret=0x0 flags=0x0000 len= 6 cdb=16 00 00 00 00 00
+0x003 FJ_RELEASE                       ret=0x0 flags=0x0000 len= 6 cdb=17 00 00 00 00 00
+0x004 FJ_INQUIRY                       ret=0x0 flags=0x0040 len= 6 cdb=12 00 00 00 c3 00
+        out n6=10597059 n8=0 data=5a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |Z...............................................................|
+0x005 FJ_EXT_INQUIRY                   ret=0x0 flags=0x0040 len= 6 cdb=12 01 f0 00 c3 00
+        out n6=10597059 n8=0 data=5a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |Z...............................................................|
+0x006 FJ_VPDxE0_INQUIRY                ret=0x0 flags=0x0040 len= 6 cdb=12 01 e0 00 c3 00
+        out n6=10597059 n8=0 data=5a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |Z...............................................................|
+0x010 FJ_ADF_LOAD                      ret=0x0 flags=0x0000 len=10 cdb=31 01 00 00 00 00 00 00 00 00
+0x011 FJ_ADF_UNLOAD                    ret=0x0 flags=0x0000 len=10 cdb=31 00 00 00 00 00 00 00 00 00
+0x020 FJ_SCAN                          ret=0x0 flags=0x0080 len= 6 cdb=1b 00 00 00 01 00
+        out n6=1 n8=1 data=00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
+0x021 FJ_READ_IMAGE_FRONT              ret=0x0 flags=0x0040 len=10 cdb=28 00 00 00 00 00 a1 b2 c3 00
+        out n6=10597059 n8=0 data=5a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |Z...............................................................|
+0x022 FJ_READ_IMAGE_BACK               ret=0x0 flags=0x0040 len=10 cdb=28 00 00 00 00 80 a1 b2 c3 00
+        out n6=10597059 n8=0 data=5a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |Z...............................................................|
+0x023 FJ_READ_IMAGE_CHECK_FRONT SCSI_SCANNER_CONTROL ret=0x0 flags=0x0000 len=10 cdb=f1 10 00 00 00 00 a1 b2 c3 00
+0x024 FJ_READ_IMAGE_CHECK_BACK SCSI_SCANNER_CONTROL ret=0x0 flags=0x0000 len=10 cdb=f1 10 80 00 00 00 a1 b2 c3 00
+0x030 FJ_SET_SCANNER_PARAM             ret=0x0 flags=0x0080 len=10 cdb=24 00 00 00 00 00 00 00 00 00
+        out n6=0 n8=0 data=00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
+0x031 FJ_REQUEST_SENSE                 ret=0x0 flags=0x0040 len= 6 cdb=03 00 00 00 c3 00
+        out n6=10597059 n8=0 data=5a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |Z...............................................................|
+0x032 FJ_REQUEST_HWSTATUS              ret=0x0 flags=0x0040 len=10 cdb=c2 00 00 00 00 00 00 b2 c3 00
+        out n6=10597059 n8=0 data=5a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |Z...............................................................|
+0x040 FJ_SCANNER_CONTROL               ret=0x0 flags=0x0000 len=10 cdb=f1 5a 00 00 00 00 00 00 00 00
+0x041 Undefined                        ret=0x0 flags=0x0000 len=10 cdb=f2 5a 00 00 00 00 00 00 00 00
+0x042 Undefined                        ret=0x0 flags=0x0000 len=10 cdb=f1 09 00 00 00 00 00 00 00 00
+0x043 Undefined                        ret=0x0 flags=0x0000 len=10 cdb=f1 0a 00 00 00 00 00 00 00 00
+0x044 Undefined                        ret=0x0 flags=0x0000 len=10 cdb=f1 0c 00 00 00 00 00 00 00 00
+0x045 Undefined                        ret=0x0 flags=0x0000 len=10 cdb=f1 0d 00 00 00 00 00 00 00 00
+0x046 Undefined                        ret=0x0 flags=0x0000 len=10 cdb=f1 0e 00 00 00 00 00 00 00 00
+0x047 FJ_SET_LAMPTIMER                 ret=0x0 flags=0x0080 len= 6 cdb=15 10 00 00 00 00
+        out n6=12 n8=1 data=00 00 00 00 3d 06 00 00 00 00 00 00 00 00 00 00  |....=...........|
+0x048 FJ_SET_JOB_SEPARATE              ret=0x0 flags=0x0080 len= 6 cdb=15 10 00 00 00 00
+        out n6=12 n8=1 data=00 00 00 00 3e 06 00 00 00 00 00 00 00 00 00 00  |....>...........|
+0x049 FJ_SET_PREPICK                   ret=0x0 flags=0x0080 len= 6 cdb=15 10 00 00 0c 00
+        out n6=12 n8=1 data=00 00 00 00 33 06 00 00 00 00 00 00 00 00 00 00  |....3...........|
+0x04a FJ_SET_SLEEP                     ret=0x0 flags=0x0080 len= 6 cdb=15 10 00 00 0c 00
+        out n6=12 n8=1 data=00 00 00 00 34 06 00 00 00 00 00 00 00 00 00 00  |....4...........|
+0x04b FJ_SET_PAGE_GUIDE_COLOR          ret=0x0 flags=0x0080 len= 6 cdb=15 10 00 00 0c 00
+        out n6=12 n8=1 data=00 00 00 00 37 06 00 00 00 00 00 00 00 00 00 00  |....7...........|
+0x04c FJ_SET_DROPOUT_COLOR             ret=0x0 flags=0x0080 len= 6 cdb=15 10 00 00 0e 00
+        out n6=14 n8=1 data=00 00 00 00 39 08 00 00 00 00 00 00 00 00 00 00  |....9...........|
+0x04d FJ_SET_DOUBLE_FEED               ret=0x0 flags=0x0080 len= 6 cdb=15 10 00 00 0c 00
+        out n6=12 n8=1 data=00 00 00 00 38 06 00 00 00 00 00 00 00 00 00 00  |....8...........|
+0x04e FJ_SET_DETECTLEN                 ret=0x0 flags=0x0080 len= 6 cdb=15 10 00 00 0c 00
+        out n6=12 n8=1 data=00 00 00 00 3c 06 00 00 00 00 00 00 00 00 00 00  |....<...........|
+0x050 FJ_SET_CROP                      ret=0x0 flags=0x0080 len= 6 cdb=15 10 00 00 0c 00
+        out n6=12 n8=1 data=00 00 00 00 3c 06 00 00 00 00 00 00 00 00 00 00  |....<...........|
+0x052 FJ_SET_BUFFER_SCAN               ret=0x0 flags=0x0080 len= 6 cdb=15 10 00 00 0c 00
+        out n6=12 n8=1 data=00 00 00 00 3a 06 00 00 00 00 00 00 00 00 00 00  |....:...........|
+0x053 Undefined                        ret=0x0 flags=0x0080 len= 6 cdb=15 10 00 00 0c 00
+        out n6=12 n8=1 data=00 00 00 00 35 06 00 00 00 00 00 00 00 00 00 00  |....5...........|
+0x054 Undefined                        ret=0x0 flags=0x0080 len= 6 cdb=15 10 00 00 0c 00
+        out n6=12 n8=1 data=00 00 00 00 2c 06 00 00 00 00 00 00 00 00 00 00  |....,...........|
+0x070 FJ_ENDORSER                      ret=0x0 flags=0x0080 len=10 cdb=c1 00 00 00 00 00 00 00 04 00
+        out n6=4 n8=1 data=00 c0 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
+0x071 FJ_SET_ENDORSER                  ret=0x0 flags=0x0080 len=10 cdb=2a 00 90 00 00 00 00 00 00 00
+        out n6=0 n8=0 data=00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
+0x072 FJ_SET_ENDORSERSTR               ret=0x0 flags=0x0080 len=10 cdb=2a 00 90 00 00 00 00 00 00 00
+        out n6=0 n8=0 data=00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
+0x080 FJ_DOWNLOAD_GAMMA                ret=0x0 flags=0x0080 len=10 cdb=2a 00 03 00 00 00 00 00 00 00
+        out n6=4294967292 n8=0 data=00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................................................................|
+0x081 FJ_SEND_LUT_TABLE                ret=0x0 flags=0x0080 len=10 cdb=2a 00 83 00 00 00 00 00 00 00
+        out n6=4294967292 n8=0 data=00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................................................................|
+0x082 FJ_DOWNLOAD_HALFTONE             ret=0x0 flags=0x0080 len=10 cdb=2a 00 02 00 00 00 ff ff fc 00
+        out n6=4294967292 n8=0 data=00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................................................................|
+0x083 FJ_READ_PAPERDETECT              ret=0x0 flags=0x0040 len=10 cdb=28 00 81 00 00 00 a1 b2 c3 00
+        out n6=10597059 n8=0 data=5a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |Z...............................................................|
+0x084 FJ_READ_PIXELSIZE                ret=0x0 flags=0x0040 len=10 cdb=28 00 80 00 00 00 a1 b2 c3 00
+        out n6=10597059 n8=0 data=5a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |Z...............................................................|
+0x100 FJ_SEND_SELFTEST_DIAGNOSTICS     ret=0x0 flags=0x0000 len= 6 cdb=1d 04 00 00 00 00
+0x101 FJ_SEND_E2TREAD256_DIAGNOSTICS   ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 10 00
+        out n6=16 n8=1 data=44 45 42 55 47 2c 45 32 54 2c 52 45 44 20 20 20  |DEBUG,E2T,RED   |
+0x102 FJ_SEND_E2TREAD512_DIAGNOSTICS   ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 10 00
+        out n6=16 n8=1 data=44 45 42 55 47 2c 45 32 54 2c 52 45 44 20 20 57  |DEBUG,E2T,RED  W|
+0x103 FJ_SEND_E2TWRITE256_DIAGNOSTICS  ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 10 00
+        out n6=16 n8=1 data=44 45 42 55 47 2c 45 32 54 2c 57 52 54 20 20 20  |DEBUG,E2T,WRT   |
+0x104 FJ_SEND_E2TWRITE512_DIAGNOSTICS  ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 10 00
+        out n6=16 n8=1 data=44 45 42 55 47 2c 45 32 54 2c 57 52 54 20 20 57  |DEBUG,E2T,WRT  W|
+0x105 FJ_SEND_E2PWRITE_DIAGNOSTICS     ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 10 00
+        out n6=16 n8=1 data=44 45 42 55 47 2c 45 32 50 2c 57 52 54 20 20 20  |DEBUG,E2P,WRT   |
+0x106 Undefined                        ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 10 00
+        out n6=16 n8=1 data=44 45 42 55 47 2c 45 32 50 2c 49 4e 49 20 20 20  |DEBUG,E2P,INI   |
+0x107 FJ_SEND_RAMREAD_DIAGNOSTICS      ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 10 00
+        out n6=16 n8=1 data=44 45 42 55 47 2c 52 41 4d 2c 52 45 44 20 20 20  |DEBUG,RAM,RED   |
+0x108 FJ_SEND_RAMWRITE_DIAGNOSTICS     ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 10 00
+        out n6=16 n8=1 data=44 45 42 55 47 2c 52 41 4d 2c 57 52 54 20 20 20  |DEBUG,RAM,WRT   |
+0x109 FJ_SEND_DIAGNOSTICS              ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 00 00
+        out n6=0 n8=0 data=00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |................|
+0x10a Undefined                        ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 10 00
+        out n6=16 n8=1 data=53 45 54 20 50 4f 57 4f 46 46 20 54 49 4d 45 20  |SET POWOFF TIME |
+0x10b Undefined                        ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 10 00
+        out n6=16 n8=1 data=47 45 54 20 50 4f 57 4f 46 46 20 54 49 4d 45 20  |GET POWOFF TIME |
+0x10c FJ_RECEIVE_DIAGNOSTICS           ret=0x0 flags=0x0040 len= 6 cdb=1c 00 00 b2 c3 00
+        out n6=10597059 n8=0 data=5a 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  |Z...............................................................|
+0x10d FJ_SEND_FIRSTREADDATE_DIAGNOSTICS ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 10 00
+        out n6=16 n8=1 data=46 49 52 53 54 20 52 45 41 44 20 44 41 54 45 20  |FIRST READ DATE |
+0x10e FJ_SEND_GETFIRSTDATE_DIAGNOSTICS ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 10 00
+        out n6=16 n8=1 data=47 45 54 20 46 49 52 53 54 20 44 41 54 45 20 20  |GET FIRST DATE  |
+0x10f FJ_SEND_GETDEVICEID_DIAGNOSTICS  ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 10 00
+        out n6=16 n8=1 data=47 45 54 20 44 45 56 49 43 45 20 49 44 20 20 20  |GET DEVICE ID   |
+0x110 FJ_SEND_GETFIRMVERSION_DIAGNOSTICS ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 10 00
+        out n6=16 n8=1 data=47 45 54 20 46 49 52 4d 56 45 52 53 49 4f 4e 20  |GET FIRMVERSION |
+0x111 FJ_SEND_READCOUNT_DIAGNOSTICS    ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 10 00
+        out n6=16 n8=1 data=52 45 41 44 20 43 4f 55 4e 54 20 20 20 20 20 20  |READ COUNT      |
+0x112 FJ_SEND_SET_SCAN_MODE_DIAGNOSTICS ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 10 00
+        out n6=16 n8=1 data=53 45 54 20 53 43 41 4e 20 4d 4f 44 45 20 20 20  |SET SCAN MODE   |
+0x113 FJ_SEND_CHANGE_IRLED_DIAGNOSTICS ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 11 00
+        out n6=17 n8=1 data=43 48 41 4e 47 45 20 49 52 4c 45 44 20 20 20 20 00  |CHANGE IRLED    .|
+0x114 FJ_SEND_JOBEND_DIAGNOSTICS       ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 10 00
+        out n6=16 n8=1 data=45 4e 44 20 57 41 49 54 49 4e 47 20 53 43 41 4e  |END WAITING SCAN|
+0x115 FJ_SEND_WAITPAPERTIME_DIAGNOSTICS ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 11 00
+        out n6=17 n8=1 data=50 41 50 45 52 20 57 41 49 54 20 54 49 4d 45 20 00  |PAPER WAIT TIME .|
+0x116 FJ_SEND_WAITPAPERTIME_OFF_DIAGNOSTICS ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 11 00
+        out n6=17 n8=1 data=50 41 50 45 52 20 57 41 49 54 20 54 49 4d 45 20 00  |PAPER WAIT TIME .|
+0x117 FJ_SEND_PRE_READMODE_DIAGNOSTICS ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 10 00
+        out n6=16 n8=1 data=53 45 54 20 50 52 45 20 52 45 41 44 4d 4f 44 45  |SET PRE READMODE|
+0x118 FJ_SEND_GET_DEV_PARAM_S_DIAGNOSTICS ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 10 00
+        out n6=16 n8=1 data=47 45 54 20 44 45 56 20 50 41 52 41 4d 20 20 53  |GET DEV PARAM  S|
+0x119 FJ_SEND_GET_DEV_PARAM_F_DIAGNOSTICS ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 10 00
+        out n6=16 n8=1 data=47 45 54 20 44 45 56 20 50 41 52 41 4d 20 20 46  |GET DEV PARAM  F|
+0x11a Undefined                        ret=0x0 flags=0x0080 len= 6 cdb=1d 00 00 00 10 00
+        out n6=16 n8=1 data=47 45 54 20 4c 41 4d 50 20 4f 46 46 20 54 49 4d  |GET LAMP OFF TIM|

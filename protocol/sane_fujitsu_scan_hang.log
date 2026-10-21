@@ -1,0 +1,440 @@
+[20:50:33.486367] [sanei_debug] Setting debug level of fujitsu to 15.
+[20:50:33.486709] [fujitsu] sane_init: start
+[20:50:33.486772] [fujitsu] sane_init: fujitsu backend 1.0.139, from sane-backends 1.2.1-debian
+[20:50:33.486878] [fujitsu] sane_init: finish
+[20:50:33.486926] [fujitsu] sane_open: start
+[20:50:33.486970] [fujitsu] sane_open: no scanners currently attached, attaching
+[20:50:33.487014] [fujitsu] sane_get_devices: start
+[20:50:34.197620] [fujitsu] sane_get_devices: reading config file fujitsu.conf
+[20:50:34.198109] [fujitsu] sane_get_devices: setting "buffer-size" to 65536
+[20:50:34.198175] [fujitsu] sane_get_devices: looking for 'scsi FUJITSU'
+[20:50:34.198281] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1041'
+[20:50:34.198340] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1042'
+[20:50:34.198392] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1078'
+[20:50:34.198443] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1095'
+[20:50:34.198508] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1096'
+[20:50:34.198560] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1097'
+[20:50:34.198613] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x10ad'
+[20:50:34.198665] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x10ae'
+[20:50:34.198714] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x10af'
+[20:50:34.198764] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x10cf'
+[20:50:34.198813] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x10e0'
+[20:50:34.198863] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x10e1'
+[20:50:34.198912] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x10e2'
+[20:50:34.198962] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x10e6'
+[20:50:34.199012] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x10e7'
+[20:50:34.199061] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x10f2'
+[20:50:34.199110] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x10fe'
+[20:50:34.199160] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1135'
+[20:50:34.199209] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x114a'
+[20:50:34.199260] [fujitsu] sane_get_devices: config option "buffer-size" (262144) is > 65536, warning!
+[20:50:34.199308] [fujitsu] sane_get_devices: setting "buffer-size" to 262144
+[20:50:34.199357] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x114d'
+[20:50:34.199406] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x114e'
+[20:50:34.199455] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x114f'
+[20:50:34.199520] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1150'
+[20:50:34.199570] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1155'
+[20:50:34.199620] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x116f'
+[20:50:34.199669] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1174'
+[20:50:34.199718] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1175'
+[20:50:34.199767] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1176'
+[20:50:34.199816] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1177'
+[20:50:34.199865] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1178'
+[20:50:34.199914] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x119d'
+[20:50:34.199963] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x119e'
+[20:50:34.200012] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x11a2'
+[20:50:34.200060] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x11f1'
+[20:50:34.200109] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x11f2'
+[20:50:34.200160] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x11f3'
+[20:50:34.200211] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x11f4'
+[20:50:34.200263] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x11fc'
+[20:50:34.200315] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1213'
+[20:50:34.200366] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x128e'
+[20:50:34.200417] [fujitsu] attach_one: start
+[20:50:34.200464] [fujitsu] attach_one: looking for 'libusb:007:003'
+[20:50:34.200537] [fujitsu] connect_fd: start
+[20:50:34.200642] [fujitsu] connect_fd: opening USB device
+[20:50:34.200844] [fujitsu] wait_scanner: start
+[20:50:34.200906] [fujitsu] do_usb_cmd: start
+[20:50:34.202516] [fujitsu] do_usb_cmd: finish
+[20:50:34.202616] [fujitsu] wait_scanner: finish
+[20:50:34.202671] [fujitsu] connect_fd: finish
+[20:50:34.202721] [fujitsu] init_inquire: start
+[20:50:34.202770] [fujitsu] do_usb_cmd: start
+[20:50:34.205105] [fujitsu] do_usb_cmd: finish
+[20:50:34.205232] [fujitsu] init_inquire: Found FUJITSU scanner ScanSnap SV600 version 0B00 at libusb:007:003
+[20:50:34.205287] [fujitsu] inquiry options
+[20:50:34.205337] [fujitsu]   color offset: 0 lines
+[20:50:34.205385] [fujitsu]   long gray scan: 0
+[20:50:34.205434] [fujitsu]   long color scan: 0
+[20:50:34.205498] [fujitsu]   emulation mode: 0
+[20:50:34.205550] [fujitsu]   CMP/CGA: 0
+[20:50:34.205599] [fujitsu]   background back: 0
+[20:50:34.205648] [fujitsu]   background front: 0
+[20:50:34.205696] [fujitsu]   background fb: 0
+[20:50:34.205744] [fujitsu]   back only scan: 0
+[20:50:34.205791] [fujitsu]   duplex offset: 0 lines
+[20:50:34.205839] [fujitsu] init_inquire: finish
+[20:50:34.205886] [fujitsu] init_vpd: start
+[20:50:34.205934] [fujitsu] do_usb_cmd: start
+[20:50:34.208241] [fujitsu] do_usb_cmd: finish
+[20:50:34.208370] [fujitsu] init_vpd: length=73
+[20:50:34.208429] [fujitsu] standard options
+[20:50:34.208504] [fujitsu]   basic x res: 300 dpi
+[20:50:34.208559] [fujitsu]   basic y res: 300 dpi
+[20:50:34.208610] [fujitsu]   step x res: 0 dpi
+[20:50:34.208660] [fujitsu]   step y res: 0 dpi
+[20:50:34.208710] [fujitsu]   max x res: 300 dpi
+[20:50:34.208760] [fujitsu]   max y res: 300 dpi
+[20:50:34.208808] [fujitsu]   min x res: 300 dpi
+[20:50:34.208856] [fujitsu]   min y res: 300 dpi
+[20:50:34.208904] [fujitsu]   60 dpi: 0
+[20:50:34.208953] [fujitsu]   75 dpi: 0
+[20:50:34.209002] [fujitsu]   100 dpi: 0
+[20:50:34.209051] [fujitsu]   120 dpi: 0
+[20:50:34.209099] [fujitsu]   150 dpi: 0
+[20:50:34.209150] [fujitsu]   160 dpi: 0
+[20:50:34.209198] [fujitsu]   180 dpi: 0
+[20:50:34.209245] [fujitsu]   200 dpi: 0
+[20:50:34.209293] [fujitsu]   240 dpi: 0
+[20:50:34.209341] [fujitsu]   300 dpi: 1
+[20:50:34.209388] [fujitsu]   320 dpi: 0
+[20:50:34.209435] [fujitsu]   400 dpi: 0
+[20:50:34.209494] [fujitsu]   480 dpi: 0
+[20:50:34.209545] [fujitsu]   600 dpi: 0
+[20:50:34.209594] [fujitsu]   800 dpi: 0
+[20:50:34.209643] [fujitsu]   1200 dpi: 0
+[20:50:34.209693] [fujitsu]   max width: 18.67 inches
+[20:50:34.209751] [fujitsu]   max length: 13.97 inches
+[20:50:34.209804] [fujitsu]   overflow: 0
+[20:50:34.209853] [fujitsu]   monochrome: 0
+[20:50:34.209902] [fujitsu]   halftone: 0
+[20:50:34.209951] [fujitsu]   grayscale: 0
+[20:50:34.209999] [fujitsu]   color_monochrome: 0
+[20:50:34.210047] [fujitsu]   color_halftone: 0
+[20:50:34.210094] [fujitsu]   color_grayscale: 1
+[20:50:34.210141] [fujitsu] vendor options
+[20:50:34.210187] [fujitsu]   adf: 0
+[20:50:34.210235] [fujitsu]   flatbed: 1
+[20:50:34.210282] [fujitsu]   transparency: 0
+[20:50:34.210330] [fujitsu]   duplex: 0
+[20:50:34.210378] [fujitsu]   back endorser: 0
+[20:50:34.210426] [fujitsu]   barcode: 0
+[20:50:34.210496] [fujitsu]   operator panel: 1
+[20:50:34.210546] [fujitsu]   front endorser: 0
+[20:50:34.210596] [fujitsu]   multi-purpose stacker: 0
+[20:50:34.210645] [fujitsu]   prepick: 0
+[20:50:34.210692] [fujitsu]   mf detect: 0
+[20:50:34.210740] [fujitsu]   paper protection: 0
+[20:50:34.210787] [fujitsu]   A/D bits: 10
+[20:50:34.210835] [fujitsu]   buffer bytes: 134217728
+[20:50:34.210883] [fujitsu] Standard commands
+[20:50:34.210930] [fujitsu]   mode_sense_10 cmd: 0
+[20:50:34.210977] [fujitsu]   mode_select_10 cmd: 0
+[20:50:34.211024] [fujitsu]   log_sense cmd: 0
+[20:50:34.211071] [fujitsu]   log_select cmd: 0
+[20:50:34.211118] [fujitsu]   change cmd: 0
+[20:50:34.211166] [fujitsu]   read_buffer cmd: 0
+[20:50:34.211213] [fujitsu]   write_buffer cmd: 0
+[20:50:34.211261] [fujitsu]   copy_and_verify cmd: 0
+[20:50:34.211307] [fujitsu]   compare cmd: 0
+[20:50:34.211355] [fujitsu]   get_d_b_status cmd: 0
+[20:50:34.211402] [fujitsu]   object_pos cmd: 0
+[20:50:34.211516] [fujitsu]   send cmd: 1
+[20:50:34.211568] [fujitsu]   read cmd: 1
+[20:50:34.211617] [fujitsu]   get_window cmd: 0
+[20:50:34.211666] [fujitsu]   set_window cmd: 1
+[20:50:34.211714] [fujitsu]   send_diag cmd: 1
+[20:50:34.211762] [fujitsu]   read_diag cmd: 1
+[20:50:34.211810] [fujitsu]   scan cmd: 1
+[20:50:34.211858] [fujitsu]   mode_sense_6 cmd: 1
+[20:50:34.211907] [fujitsu]   copy cmd: 0
+[20:50:34.212092] [fujitsu]   release cmd: 1
+[20:50:34.212146] [fujitsu]   reserve_unit cmd: 1
+[20:50:34.212253] [fujitsu]   mode_select_6 cmd: 1
+[20:50:34.212307] [fujitsu]   inquiry cmd: 1
+[20:50:34.212357] [fujitsu]   request_sense cmd: 1
+[20:50:34.212406] [fujitsu]   test_unit_ready cmd: 1
+[20:50:34.212456] [fujitsu] Vendor commands
+[20:50:34.212520] [fujitsu]   subwindow cmd: 0
+[20:50:34.212570] [fujitsu]   endorser cmd: 0
+[20:50:34.212619] [fujitsu]   hardware status cmd: 1
+[20:50:34.212670] [fujitsu]   hardware status 2 cmd: 0
+[20:50:34.212719] [fujitsu]   hardware status 3 cmd: 0
+[20:50:34.212767] [fujitsu]   scanner control cmd: 1
+[20:50:34.212815] [fujitsu]   device restart cmd: 0
+[20:50:34.212863] [fujitsu]   brightness steps: 0
+[20:50:34.212911] [fujitsu]   threshold steps: 0
+[20:50:34.212959] [fujitsu]   contrast steps: 0
+[20:50:34.213006] [fujitsu]   built in gamma patterns: 0
+[20:50:34.213054] [fujitsu]   download gamma patterns: 0
+[20:50:34.213101] [fujitsu]   built in dither patterns: 0
+[20:50:34.213149] [fujitsu]   download dither patterns: 0
+[20:50:34.213198] [fujitsu]   RIF: 1
+[20:50:34.213246] [fujitsu]   DTC (AutoI): 0
+[20:50:34.213295] [fujitsu]   SDTC (AutoII): 0
+[20:50:34.213343] [fujitsu]   outline extraction: 0
+[20:50:34.213391] [fujitsu]   image emphasis: 0
+[20:50:34.213438] [fujitsu]   automatic separation: 0
+[20:50:34.213495] [fujitsu]   mirror image: 0
+[20:50:34.213544] [fujitsu]   white level follower: 0
+[20:50:34.213592] [fujitsu]   subwindow: 0
+[20:50:34.213639] [fujitsu]   diffusion: 0
+[20:50:34.213686] [fujitsu]   ipc3: 0
+[20:50:34.213734] [fujitsu]   rotation: 0
+[20:50:34.213782] [fujitsu]   hybrid crop deskew: 0
+[20:50:34.213829] [fujitsu]   vpd extends to byte 6f: 0
+[20:50:34.213876] [fujitsu]   compression MH: 0
+[20:50:34.213923] [fujitsu]   compression MR: 0
+[20:50:34.213970] [fujitsu]   compression MMR: 0
+[20:50:34.214017] [fujitsu]   compression JBIG: 0
+[20:50:34.214064] [fujitsu]   compression JPG1: 1
+[20:50:34.214113] [fujitsu]   (Disabled)
+[20:50:34.214159] [fujitsu]   compression JPG2: 0
+[20:50:34.214206] [fujitsu]   compression JPG3: 0
+[20:50:34.214254] [fujitsu]   back endorser mech: 0
+[20:50:34.214301] [fujitsu]   back endorser stamp: 0
+[20:50:34.214348] [fujitsu]   back endorser elec: 0
+[20:50:34.214396] [fujitsu]   endorser max id: 0
+[20:50:34.214443] [fujitsu]   front endorser mech: 0
+[20:50:34.214498] [fujitsu]   front endorser stamp: 0
+[20:50:34.214547] [fujitsu]   front endorser elec: 0
+[20:50:34.214596] [fujitsu]   back endorser type: 0
+[20:50:34.214645] [fujitsu]   back endorser type: 0
+[20:50:34.214692] [fujitsu]   connection type: 2
+[20:50:34.214739] [fujitsu]   endorser ext: 0
+[20:50:34.214787] [fujitsu]   endorser pr_b: 0
+[20:50:34.214835] [fujitsu]   endorser pr_f: 0
+[20:50:34.214882] [fujitsu]   endorser po_b: 0
+[20:50:34.214929] [fujitsu]   endorser po_f: 0
+[20:50:34.214976] [fujitsu]   horizontal overscan: 0
+[20:50:34.215024] [fujitsu]   vertical overscan: 118
+[20:50:34.215073] [fujitsu]   default bg adf b: 0
+[20:50:34.215120] [fujitsu]   default bg adf f: 0
+[20:50:34.215168] [fujitsu]   default bg fb: 0
+[20:50:34.215216] [fujitsu]   auto color: 0
+[20:50:34.215263] [fujitsu]   blank skip: 0
+[20:50:34.215311] [fujitsu]   multi image: 0
+[20:50:34.215358] [fujitsu]   f b type indep: 0
+[20:50:34.215404] [fujitsu]   f b res indep: 0
+[20:50:34.215451] [fujitsu]   dropout spec: 0
+[20:50:34.215510] [fujitsu]   dropout non: 0
+[20:50:34.215559] [fujitsu]   dropout white: 0
+[20:50:34.215605] [fujitsu]   skew check: 0
+[20:50:34.215653] [fujitsu]   new feed roller: 0
+[20:50:34.215700] [fujitsu]   paper protection: 0
+[20:50:34.215747] [fujitsu]   extra evpd length: 8
+[20:50:34.215830] [fujitsu]   paper count: 0
+[20:50:34.215879] [fujitsu]   paper number: 0
+[20:50:34.215927] [fujitsu]   ext send to: 0
+[20:50:34.215975] [fujitsu]   staple det: 0
+[20:50:34.216022] [fujitsu]   pause host: 0
+[20:50:34.216071] [fujitsu]   pause panel: 0
+[20:50:34.216119] [fujitsu]   pause conf: 0
+[20:50:34.216167] [fujitsu]   hq print: 0
+[20:50:34.216215] [fujitsu]   ext GHS len: 0
+[20:50:34.216263] [fujitsu]   smbc func: 0
+[20:50:34.216311] [fujitsu]   imprint chk b: 0
+[20:50:34.216359] [fujitsu]   imprint chk f: 0
+[20:50:34.216406] [fujitsu]   force w bg: 0
+[20:50:34.216455] [fujitsu]   mf recover lvl: 0
+[20:50:34.216511] [fujitsu]   first read time: 1
+[20:50:34.216559] [fujitsu]   div scanning: 0
+[20:50:34.216607] [fujitsu]   start job: 0
+[20:50:34.216655] [fujitsu]   lifetime log: 1
+[20:50:34.216704] [fujitsu]   imff save rest: 0
+[20:50:34.216751] [fujitsu]   wide scsi type: 0
+[20:50:34.216799] [fujitsu]   lut hybrid crop: 0
+[20:50:34.216848] [fujitsu]   over under amt: 0
+[20:50:34.216897] [fujitsu]   rgb lut: 0
+[20:50:34.216946] [fujitsu]   num lut dl: 0
+[20:50:34.216994] [fujitsu]   ErP Lot6 (power off timer): 1
+[20:50:34.217041] [fujitsu]   sync next feed: 0
+[20:50:34.217088] [fujitsu] init_vpd: finish
+[20:50:34.217136] [fujitsu] init_model: start
+[20:50:34.217187] [fujitsu] init_model: finish
+[20:50:34.217235] [fujitsu] init_ms: start
+[20:50:34.252419] [fujitsu]   autocolor: 0
+[20:50:34.252585] [fujitsu]   prepick: 0
+[20:50:34.252626] [fujitsu]   sleep: 1
+[20:50:34.252664] [fujitsu]   duplex: 0
+[20:50:34.252700] [fujitsu]   rand: 0
+[20:50:34.252735] [fujitsu]   bg: 0
+[20:50:34.252771] [fujitsu]   df: 0
+[20:50:34.252808] [fujitsu]   dropout: 0
+[20:50:34.252842] [fujitsu]   buff: 1
+[20:50:34.252873] [fujitsu]   auto: 1
+[20:50:34.252906] [fujitsu]   lamp: 0
+[20:50:34.252937] [fujitsu]   jobsep: 0
+[20:50:34.252972] [fujitsu] init_ms: finish
+[20:50:34.253007] [fujitsu] init_user: start
+[20:50:34.253044] [fujitsu] init_user: finish
+[20:50:34.253080] [fujitsu] init_options: start
+[20:50:34.253116] [fujitsu] init_options: finish
+[20:50:34.253151] [fujitsu] init_interlace: start
+[20:50:34.253185] [fujitsu] update_params: start
+[20:50:34.253220] [fujitsu] update_params: x: max=22400, page=10200, gpw=22400, res=300
+[20:50:34.253257] [fujitsu] update_params: y: max=16768, page=13200, gph=16768, res=300
+[20:50:34.253293] [fujitsu] update_params: area: tlx=0, brx=10200, tly=0, bry=13200
+[20:50:34.253328] [fujitsu] update_params: params: ppl=2550, Bpl=7650, lines=3300
+[20:50:34.253364] [fujitsu] update_params: params: format=1, depth=8, last=1
+[20:50:34.253400] [fujitsu] update_u_params: start
+[20:50:34.253434] [fujitsu] update_u_params: finish
+[20:50:34.253476] [fujitsu] update_params: finish
+[20:50:34.256073] [fujitsu] init_interlace: color_interlace: 1
+[20:50:34.256143] [fujitsu] init_interlace: finish
+[20:50:34.256177] [fujitsu] init_serial: start
+[20:50:34.256210] [fujitsu] do_usb_cmd: start
+[20:50:34.258696] [fujitsu] do_usb_cmd: finish
+[20:50:34.258780] [fujitsu] do_usb_cmd: start
+[20:50:34.261385] [fujitsu] do_usb_cmd: finish
+[20:50:34.261423] [fujitsu] init_serial: found sn 1609771
+[20:50:34.261453] [fujitsu] init_serial: serial_name: ScanSnap SV600:1609771
+[20:50:34.261490] [fujitsu] init_serial: finish
+[20:50:34.261517] [fujitsu] disconnect_fd: start
+[20:50:34.261543] [fujitsu] disconnecting usb device
+[20:50:34.261635] [fujitsu] disconnect_fd: finish
+[20:50:34.261663] [fujitsu] attach_one: finish
+[20:50:34.261694] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x132b'
+[20:50:34.261726] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x132c'
+[20:50:34.261753] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x132d'
+[20:50:34.261780] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x132e'
+[20:50:34.261807] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x132f'
+[20:50:34.261833] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x13f3'
+[20:50:34.261860] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x13f4'
+[20:50:34.261886] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x145f'
+[20:50:34.261976] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1460'
+[20:50:34.262007] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1461'
+[20:50:34.262035] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1462'
+[20:50:34.262062] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1463'
+[20:50:34.262088] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1464'
+[20:50:34.262115] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x146b'
+[20:50:34.262143] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x146c'
+[20:50:34.262169] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x146d'
+[20:50:34.262195] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x146e'
+[20:50:34.262222] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x146f'
+[20:50:34.262248] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x14ac'
+[20:50:34.262275] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x14b8'
+[20:50:34.262302] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x14bd'
+[20:50:34.262329] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x14be'
+[20:50:34.262355] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x14df'
+[20:50:34.262382] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x14e0'
+[20:50:34.262408] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x14e1'
+[20:50:34.262435] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x14e2'
+[20:50:34.262463] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x14e3'
+[20:50:34.262499] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x14e4'
+[20:50:34.262526] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x14e5'
+[20:50:34.262554] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x14e6'
+[20:50:34.262582] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x14e7'
+[20:50:34.262613] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x14e8'
+[20:50:34.262638] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x151e'
+[20:50:34.262663] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x151f'
+[20:50:34.262688] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1520'
+[20:50:34.262712] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1521'
+[20:50:34.262738] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1522'
+[20:50:34.262763] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x159f'
+[20:50:34.262788] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x15fc'
+[20:50:34.262813] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x160a'
+[20:50:34.262838] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x160b'
+[20:50:34.262862] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1632'
+[20:50:34.262888] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x140a'
+[20:50:34.262913] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1575'
+[20:50:34.262938] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x15fd'
+[20:50:34.262964] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x15fe'
+[20:50:34.262989] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x15ff'
+[20:50:34.263014] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1600'
+[20:50:34.263039] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1601'
+[20:50:34.263064] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1602'
+[20:50:34.263090] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x162d'
+[20:50:34.263115] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x162e'
+[20:50:34.263141] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x162c'
+[20:50:34.263166] [fujitsu] sane_get_devices: looking for 'usb 0x04c5 0x1630'
+[20:50:34.263202] [fujitsu] sane_get_devices: found scanner libusb:007:003
+[20:50:34.263227] [fujitsu] sane_get_devices: found 1 scanner(s)
+[20:50:34.263253] [fujitsu] sane_get_devices: finish
+[20:50:34.263280] [fujitsu] sane_open: device ScanSnap SV600:1609771 requested
+[20:50:34.263305] [fujitsu] sane_open: device ScanSnap SV600:1609771 found
+[20:50:34.263330] [fujitsu] connect_fd: start
+[20:50:34.263354] [fujitsu] connect_fd: opening USB device
+[20:50:34.263522] [fujitsu] wait_scanner: start
+[20:50:34.263563] [fujitsu] do_usb_cmd: start
+[20:50:34.264859] [fujitsu] do_usb_cmd: finish
+[20:50:34.264899] [fujitsu] wait_scanner: finish
+[20:50:34.264923] [fujitsu] connect_fd: finish
+[20:50:34.264948] [fujitsu] sane_open: finish
+[20:50:34.265170] [fujitsu] sane_start: start
+[20:50:34.265197] [fujitsu] started=0, side=0, source=0
+[20:50:34.265222] [fujitsu] update_params: start
+[20:50:34.265246] [fujitsu] update_params: x: max=22400, page=10200, gpw=22400, res=300
+[20:50:34.265271] [fujitsu] update_params: y: max=16768, page=13200, gph=16768, res=300
+[20:50:34.265296] [fujitsu] update_params: area: tlx=0, brx=10200, tly=0, bry=13200
+[20:50:34.265320] [fujitsu] update_params: params: ppl=2550, Bpl=7650, lines=3300
+[20:50:34.265344] [fujitsu] update_params: params: format=1, depth=8, last=1
+[20:50:34.265369] [fujitsu] update_u_params: start
+[20:50:34.265393] [fujitsu] update_u_params: finish
+[20:50:34.265417] [fujitsu] update_params: finish
+[20:50:34.265441] [fujitsu] scanner_control: start
+[20:50:34.265465] [fujitsu] scanner_control: function 1
+[20:50:34.265499] [fujitsu] do_usb_cmd: start
+[20:50:34.267005] [fujitsu] do_usb_cmd: finish
+[20:50:34.267040] [fujitsu] scanner_control: success, tries 1, ret 0
+[20:50:34.267067] [fujitsu] scanner_control: finish
+[20:50:34.267093] [fujitsu] diag_preread: start
+[20:50:34.267120] [fujitsu] diag_preread: not supported, returning
+[20:50:34.267146] [fujitsu] mode_select_auto: start
+[20:50:34.267172] [fujitsu] do_usb_cmd: start
+[20:50:34.269302] [fujitsu] do_usb_cmd: finish
+[20:50:34.269336] [fujitsu] mode_select_auto: finish
+[20:50:34.269363] [fujitsu] mode_select_df: start
+[20:50:34.269389] [fujitsu] mode_select_df: unsupported
+[20:50:34.269415] [fujitsu] mode_select_bg: start
+[20:50:34.269441] [fujitsu] mode_select_bg: unsupported
+[20:50:34.269467] [fujitsu] mode_select_dropout: start
+[20:50:34.269500] [fujitsu] mode_select_dropout: unsupported
+[20:50:34.269527] [fujitsu] mode_select_buff: start
+[20:50:34.269553] [fujitsu] do_usb_cmd: start
+[20:50:34.271593] [fujitsu] do_usb_cmd: finish
+[20:50:34.271628] [fujitsu] mode_select_buff: finish
+[20:50:34.271655] [fujitsu] mode_select_prepick: start
+[20:50:34.271680] [fujitsu] mode_select_prepick: unsupported
+[20:50:34.271707] [fujitsu] send_endorser: start
+[20:50:34.271733] [fujitsu] send_endorser: unsupported
+[20:50:34.271759] [fujitsu] set_window: start
+[20:50:34.271786] [fujitsu] do_usb_cmd: start
+[20:50:34.274548] [fujitsu] do_usb_cmd: finish
+[20:50:34.274628] [fujitsu] set_window: finish
+[20:50:34.274659] [fujitsu] endorser: start
+[20:50:34.274689] [fujitsu] endorser: finish 0
+[20:50:34.274719] [fujitsu] scanner_control: start
+[20:50:34.274750] [fujitsu] scanner_control: function 5
+[20:50:34.274786] [fujitsu] do_usb_cmd: start
+[20:50:34.276141] [fujitsu] do_usb_cmd: finish
+[20:50:34.276181] [fujitsu] scanner_control: success, tries 1, ret 0
+[20:50:34.276212] [fujitsu] scanner_control: finish
+[20:50:34.276242] [fujitsu] object_position: start 1
+[20:50:34.276271] [fujitsu] object_position: flatbed no-op
+[20:50:34.276300] [fujitsu] start_scan: start
+[20:50:34.276329] [fujitsu] do_usb_cmd: start
+[20:51:04.277367] [fujitsu] stat: return error 'Error during device I/O'
+[20:51:04.277516] [fujitsu] start_scan: finish
+[20:51:04.277547] [fujitsu] sane_start: ERROR: cannot start_scan
+[20:51:04.277574] [fujitsu] sane_start: error 9
+scanimage: sane_start: Error during device I/O
+[20:51:04.277639] [fujitsu] sane_cancel: start
+[20:51:04.277666] [fujitsu] check_for_cancel: start 0 1
+[20:51:04.277693] [fujitsu] check_for_cancel: already cancelled
+[20:51:04.277719] [fujitsu] check_for_cancel: finish 2
+[20:51:04.277745] [fujitsu] sane_cancel: finish
+[20:51:04.277772] [fujitsu] sane_close: start
+[20:51:04.277798] [fujitsu] mode_select_buff: start
+[20:51:04.277825] [fujitsu] do_usb_cmd: start
+[20:51:34.278819] [fujitsu] stat: return error 'Error during device I/O'
+[20:51:34.278948] [fujitsu] mode_select_buff: finish
+[20:51:34.278980] [fujitsu] disconnect_fd: start
+[20:51:34.279009] [fujitsu] disconnecting usb device
+[20:51:34.279097] [fujitsu] disconnect_fd: finish
+[20:51:34.279160] [fujitsu] sane_close: finish
+[20:51:34.279199] [fujitsu] sane_exit: start
+[20:51:34.279228] [fujitsu] disconnect_fd: start
+[20:51:34.279256] [fujitsu] disconnect_fd: finish
+[20:51:34.279285] [fujitsu] sane_exit: finish

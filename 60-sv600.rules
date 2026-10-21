@@ -1,0 +1,6 @@
+# ScanSnap SV600: let logged-in users and the scanner group access it without sudo.
+# Install: sudo cp 60-sv600.rules /etc/udev/rules.d/ && sudo udevadm control --reload && sudo udevadm trigger
+# Fujitsu-branded
+ATTRS{idVendor}=="04c5", ATTRS{idProduct}=="128e", MODE="0664", GROUP="scanner", TAG+="uaccess"
+# Ricoh-branded
+ATTRS{idVendor}=="05ca", ATTRS{idProduct}=="03c7", MODE="0664", GROUP="scanner", TAG+="uaccess"

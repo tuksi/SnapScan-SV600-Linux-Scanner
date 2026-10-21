@@ -1,0 +1,129 @@
+# Settings for the SV600 scanner tools (GUI and command line).
+# This file lives in ~/.config/sv600-linux/settings.toml and is created on first run.
+# Every value below is the built-in default; change what you like. Deleting a line restores
+# its default. Command-line options override this file for a single run.
+
+[output]
+# Where scans are saved. ~ means your home folder; the folder is created when needed.
+folder = "~/Pictures/SV600"
+# File name pattern (without extension). Fields: {date} = 2026-10-19, {time} = 223015,
+# {n} = next free number in the folder (use {n:03} for 001, 002, ...).
+# Split objects get _1, _2, ... appended.
+name = "scan_{date}_{n:03}"
+# File format: jpg, png (lossless), tif, pdf, webp.
+format = "jpg"
+# JPEG / PDF / WebP quality, 1-100. 100 = best quality, largest files
+# (full 490 x 370 mm scan, depends on content: q90 ~4-6 MB, q95 ~6-10 MB, q100 ~17-20 MB;
+# all save in under 0.3 s).
+jpeg_quality = 100
+# PNG zlib level 0-9. 1 is the measured sweet spot: 2.7 s and smaller than Pillow's level 6.
+# 0 = no compression (fastest, ~74 MB), 9 = smallest but very slow.
+png_compression = 1
+
+[correction]
+# Remove the sweep distortion, colour fringing and far-side darkening.
+# false = save the raw, distorted 5572 x 4429 frame exactly as the scanner sends it.
+enabled = true
+# "inscribed" = largest rectangle the scanner fully covers (~490 x 370 mm).
+# "full"      = the whole trapezoid it sees (~704 x 374 mm) with black corners.
+area = "inscribed"
+# Brighten the far side of the sweep (it is up to ~36 % darker: farther from lamp and lens).
+flat_field = true
+# Colour calibration (measured on a SpyderCHECKR 24): fixes the scanner's dark, blue-tinted
+# colours. Average colour error dE2000 17.9 -> 2.5. Adds about 0.8 s per scan.
+colour = true
+# Calibration file. Empty = ~/.config/sv600-linux/sv600_calibration.json if it exists,
+# otherwise the calibration shipped with the program (made for one particular SV600).
+calibration = ""
+# Height of the scanner's viewpoint above the desk, in mm, used to correct objects that are
+# not flat on the desk (see split.object_height_mm). 0 = use the calibration's value (~330 mm,
+# from the geometry fit). To refine it: measure a book with a ruler (width W, thickness z),
+# scan it, and read its width Wd at height 0 in the preview: H = z * Wd / (Wd - W).
+head_height_mm = 0.0
+
+[brighten]
+# Auto-levels stretch after correction. The raw scans are a little dark.
+enabled = false
+# Percentage of darkest/brightest pixels clipped when stretching (per channel).
+cutoff_percent = 0.5
+
+[split]
+# Find each object (page, book), straighten it and save it as NAME_1.EXT, NAME_2.EXT, ...
+enabled = false
+# Desk kept around each object, in mm.
+margin_mm = 10.0
+# Default height of the objects' top surface above the desk, in mm (e.g. 40 for the cover of a
+# 4 cm thick book lying closed). Raised objects look ~12 % too big at 40 mm; with the height
+# set, cut-outs come out at true size. Can be changed per object in the preview.
+object_height_mm = 0.0
+# Also keep the whole scan (NAME.EXT) next to the cut-outs.
+save_full_scan = true
+# Colour for any part of the margin the scanner could not see (outside the scan area). [R, G, B]
+fill_colour = [0, 0, 0]
+
+[detection]
+# How objects are told apart from the desk (used by split). Measured on a wooden desk;
+# adjust if you use a different surface, e.g. the ScanSnap black mat.
+# Objects smaller than this are ignored (plugs, pens, small clutter).
+min_side_mm = 30.0
+min_area_cm2 = 30.0
+# Object area / area of its enclosing rotated rectangle. Books and pages are ~0.95+;
+# cables and heaps of clutter are ~0.5. Lower it for objects with rounded corners.
+min_rectangularity = 0.80
+# Colour (hue) difference from the desk that counts as "not desk", in Lab a/b units.
+# Measured: plain desk ~2, lamp glare near the base ~7, white paper ~30.
+desk_colour_threshold = 18.0
+# Pixels darker than this (Lab L, 0-255) are left to the outline cue only, so a page pushed
+# against the black scanner base is not merged with it. Black books are found by their outline.
+dark_limit = 45
+# ...but only if they are also colourless (Lab a/b within this of grey): a dark coloured cover
+# (deep purple, navy) still counts as "not desk". Measured: scanner base ~2, dark desk shadows
+# ~9-11, a deep purple cover ~17.
+dark_colour_chroma = 14.0
+# Edge detector thresholds (Canny, per colour channel). Lower = more sensitive (wood grain
+# starts to show up below ~20).
+edge_low = 30
+edge_high = 90
+# Gaps in an object's outline up to this size are closed before it is filled.
+outline_gap_mm = 1.5
+# Edge and colour cues closer than this are joined into one object.
+# Objects placed closer together than this may be merged: leave a gap.
+merge_gap_mm = 2.0
+# Second pass that bridges bigger gaps in outlines (a book whose edge is broken by its page
+# block or shadow). A box found inside a bigger box is replaced by the bigger one (the picture
+# on a cover -> the whole book), unless the boxes inside cover more than this fraction of it
+# (then the bigger box is really two objects lying close together, and they are kept apart).
+outer_gap_mm = 5.0
+outer_max_inner_fraction = 0.6
+# Anything thinner than about twice this (cables, pens, wood-grain streaks) is removed.
+thin_object_mm = 4.0
+# Reading order of cut-outs: objects whose centres are within this height count as one row
+# (numbered left to right), rows are numbered top to bottom.
+row_height_mm = 50.0
+
+[continuous]
+# Pressing the Scan button on the SV600 starts a scan whenever the app is idle.
+# (The app then checks the button about 10 times a second while it is open.)
+scanner_button = true
+# Continuous mode: seconds to wait before the next scan starts by itself (time to turn the
+# page). 0 = do not start by itself; wait for the scanner's Scan button or Space instead.
+timer_s = 0.0
+# Continuous mode: save every scan (and its boxes) as soon as it has been processed.
+auto_save = false
+
+[gui]
+# Magnifier shown while dragging a box corner/edge, a work-area handle or drawing a new box.
+loupe = true
+# Magnification: screen pixels per scan pixel (2 = each scan pixel shown 2x2;
+# with the default size that is about 10 mm of the desk across).
+loupe_zoom = 2.0
+# Size of the magnifier window, in screen pixels.
+loupe_size_px = 240
+
+[scanner]
+# USB command timeout.
+usb_timeout_s = 15.0
+# Timeout for each image data transfer while the head sweeps.
+read_timeout_s = 30.0
+# How long to wait for the scanner to report the first image data ready.
+image_ready_timeout_s = 60.0

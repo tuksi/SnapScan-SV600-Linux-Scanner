@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=SV600 Scanner
+GenericName=Document Scanner
+Comment=Scan with the ScanSnap SV600, straighten and split pages and books
+Exec=sv600-scanner %f
+Icon=sv600-scanner
+Terminal=false
+Categories=Graphics;Scanning;
+MimeType=image/jpeg;image/png;image/tiff;
+Keywords=scanner;ScanSnap;SV600;book;

@@ -1,0 +1,5 @@
+{
+ "square_mm": 15.0,
+ "print_scale": 0.965,
+ "note": "print_scale = measured length of the sheet's 100 mm line / 100 (this sheet: 96.5 mm)"
+}

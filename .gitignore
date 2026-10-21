@@ -218,3 +218,25 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# ---------------------------------------------------------------- SV600 project
+# Obsolete files waiting for deletion
+to_delete/
+
+# Large local data, kept for further development but not committed:
+#   calibration/cal1..8.png          raw checkerboard scans (calibration/CALIBRATION.md step 2)
+#   calibration/colour/*.png         SpyderCHECKR scans (calibration/CALIBRATION.md step 3)
+#   protocol/captures/*.pcap, *_data/  Windows USB captures (protocol/fjcap.py); *_cmds.txt committed
+#   scans/                           raw scans (sv600correct.py input)
+#   dev/                             test images for tools/gui_*test.py (dev/desk_c.png, dev/books/)
+calibration/*.png
+calibration/colour/*.png
+protocol/captures/*.pcap
+protocol/captures/*_data/
+!protocol/*.log
+scans/
+dev/
+
+# Calibration previews and checks (re-created by the tools)
+calibration/*.jpg
+calibration/colour/*.jpg
