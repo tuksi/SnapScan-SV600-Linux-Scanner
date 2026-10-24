@@ -21,6 +21,12 @@
   finds objects by comparing each scan with it, spot by spot (`detection.background_threshold`,
   default 12). Without a stored background, `auto` is used.
 
+- **Versioning of settings and sessions.** `settings.toml` starts with `version = N`, and
+  `session.json` records the session format and the app version that wrote it. An older version
+  keeps working with newer files: it ignores what it does not know and carries it through
+  unchanged (unknown settings, newer box options, unknown session fields). A setting value it
+  cannot accept uses the default for that run, and its line in the file is left alone.
+
 ### Changed
 - **The session is kept automatically.** Every scan, with its boxes, names, heights, prefix, saved
   state and undo history, is kept in `~/.local/share/sv600-linux/session/`. A small
@@ -49,6 +55,13 @@
   shrink-wrapped book with black hair in a corner). That part is exactly as dark and colourless as
   the mat, so it bites a piece out of the detected shape. The default `detection.min_rectangularity`
   is now 0.70 (was 0.80): such books measured 0.75-0.79, clutter 0.35-0.5.
+
+- **A session saved by a newer version crashed the app at startup** (e.g. after switching git
+  branches). It now opens normally. A session that cannot be opened at all is kept unchanged,
+  unless you choose to delete it, and the window uses a temporary session.
+- **A setting value this version does not accept made all settings fall back to defaults**, and
+  the next save wrote those defaults over the file. Now only that one setting uses its default,
+  and its line in the file is left alone.
 
 ### Removed
 - `.sv600session` files: Save session, Save session as, Open session and Recent sessions are

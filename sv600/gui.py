@@ -144,9 +144,10 @@ class BoxItem(HandleMixin, QtWidgets.QGraphicsObject):
     edited = Signal()       # a drag finished and changed something (one undo step)
     open_preview = Signal() # double-click
 
-    def __init__(self, cx, cy, w, h, angle=0.0, quarter=0, name='', height=0.0):
+    def __init__(self, cx, cy, w, h, angle=0.0, quarter=0, name='', height=0.0, extra=()):
         super().__init__()
         self.w, self.h, self.quarter, self.number = w, h, quarter, 0
+        self.extra = tuple(extra)   # fields of a newer program version: kept, not used
         self.name = name        # file name chosen by the user; '' = automatic
         self.height_mm = height # top surface above the desk (raised objects are scaled to true size)
         self.setPos(cx, cy)
@@ -982,6 +983,7 @@ class Page:
         self.files = []               # files written for this page
         self.png_path = None          # lossless copy in the session folder (reload source), once stored
         self.det_png = self.small_path = None
+        self.extra = {}               # keys of a newer program version: kept, not used
         self.hint, self.prefix = None, ''
         import cv2
         self.set_small(cv2.resize(image, None, fx=0.25, fy=0.25, interpolation=cv2.INTER_AREA))
@@ -1022,11 +1024,13 @@ class Page:
         else:
             small = np.ascontiguousarray(small[:, :, ::-1])
         p.set_small(small)
+        p.extra = {}
+        p.extra = {k: v for k, v in meta.items() if k not in p.meta()}
         return p
 
     def meta(self):
         name = lambda path: os.path.basename(path) if path else None
-        return {'number': self.number, 'image': name(self.png_path), 'small_image': name(self.small_path),
+        return dict(self.extra) | {'number': self.number, 'image': name(self.png_path), 'small_image': name(self.small_path),
                 'det_image': name(self.det_png) if isinstance(self.hint, np.ndarray) else None,
                 'label': self.label, 'prefix': self.prefix, 'size': list(self.size),
                 'base': self.base, 'files': self.files,
@@ -1156,6 +1160,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.scan_count = 0
         self.session_dir = self.make_session_dir()   # temporary until attach_session()
         self.persistent = False           # True: the session folder survives closing the program
+        self.session_extra, self.session_version = {}, session.VERSION   # newer program's data, kept
         self.session_lock = None
         from concurrent.futures import ThreadPoolExecutor
         self.storer = ThreadPoolExecutor(max_workers=1)   # writes scans into the session folder
@@ -1185,6 +1190,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.update_next_name()
         self.update_title()
         self.start_watcher()
+        if settings.newer_file():
+            self.step_label.setText('Settings saved by a newer version: what this version does not know '
+                                    'is left unchanged in the file')
 
     # compatibility helpers used by the tests and the jobs
     @property
@@ -1735,7 +1743,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def snapshot(self):
         r = self.work.r if self.work else QRectF()
         boxes = tuple((round(b.pos().x(), 2), round(b.pos().y(), 2), round(b.w, 2), round(b.h, 2),
-                       round(b.rotation(), 3), b.quarter, b.name, b.height_mm) for b in self.boxes)
+                       round(b.rotation(), 3), b.quarter, b.name, b.height_mm) + b.extra for b in self.boxes)
         sel = tuple(i for i, b in enumerate(self.boxes) if b.isSelected())
         return ((r.x(), r.y(), r.width(), r.height()), boxes, sel)
 
@@ -1771,8 +1779,8 @@ class MainWindow(QtWidgets.QMainWindow):
         area, boxes, sel = snap
         if self.work is not None and area[2] > 0:
             self.work.set_rect(QRectF(*area))
-        for i, (cx, cy, w, h, a, q, name, height) in enumerate(boxes):
-            b = self.add_box(cx, cy, w, h, a, q, name, height)
+        for i, (cx, cy, w, h, a, q, name, height, *extra) in enumerate(boxes):
+            b = self.add_box(cx, cy, w, h, a, q, name, height, extra)
             b.setSelected(i in sel)
         self.renumber_only()
         self.thumb_timer.start()
@@ -1864,10 +1872,10 @@ class MainWindow(QtWidgets.QMainWindow):
                                  'No objects found: draw boxes by dragging on the scan, or adjust the work area')
                                 + (f' ({note})' if note else ''))
 
-    def add_box(self, cx, cy, w, h, angle=0.0, quarter=0, name='', height=None):
+    def add_box(self, cx, cy, w, h, angle=0.0, quarter=0, name='', height=None, extra=()):
         if height is None:
             height = self.cfg['split']['object_height_mm']
-        b = BoxItem(cx, cy, w, h, angle, quarter, name, height)
+        b = BoxItem(cx, cy, w, h, angle, quarter, name, height, extra)
         b.changed.connect(self.boxes_changed)
         b.edited.connect(lambda: self.commit('box'))
         b.open_preview.connect(lambda b=b: self.open_preview(b))
@@ -2064,7 +2072,7 @@ class MainWindow(QtWidgets.QMainWindow):
             self.renumber_only()
             self.commit('save')
         jobs = [((cx, cy, w, h, a), q, name, self.box_scale(z))
-                for cx, cy, w, h, a, q, name, z in page.boxes_now()]
+                for cx, cy, w, h, a, q, name, z, *_ in page.boxes_now()]
         save_full = not jobs or self.cfg['split']['save_full_scan']
         boxes_at_save = page.boxes_now()
 
@@ -2169,10 +2177,10 @@ class MainWindow(QtWidgets.QMainWindow):
             return
         pages = [p for p in self.pages if p.png_path]           # scans still being stored come next time
         try:
-            session.write(self.session_dir, {
+            session.write(self.session_dir, self.session_extra | {
                 'current': pages.index(self.page) if self.page in pages else 0,
                 'scan_count': self.scan_count, 'page_serial': getattr(self, 'page_serial', 0),
-                'pages': [p.meta() for p in pages]})
+                'pages': [p.meta() for p in pages]}, self.session_version)
         except OSError as e:
             self.step_label.setText(f'Could not write the session: {e}')
 
@@ -2191,15 +2199,49 @@ class MainWindow(QtWidgets.QMainWindow):
         try:
             meta = session.read(self.session_dir)
         except (OSError, ValueError) as e:
-            QtWidgets.QMessageBox.warning(self, 'Session', f'The previous session cannot be read:\n{e}')
+            if not self.confirm_unreadable(e):
+                return
             meta = None
         if meta and meta['pages'] and self.ask_continue(meta):
-            self.load_session(meta)
+            try:
+                self.load_session(meta)
+            except Exception as e:                 # never crash or delete on a session we cannot use
+                traceback.print_exc()
+                self.forget_pages()
+                if not self.confirm_unreadable(e):
+                    return
+                self.clear_session()
         else:
             if meta:
                 self.page_serial = max(getattr(self, 'page_serial', 0), meta.get('page_serial', 0))
             self.clear_session()
         self.update_title()
+
+    def detach_session(self, why):
+        """Leave the kept session folder untouched and use a temporary session in this window."""
+        self.forget_pages()
+        self.session_lock.close()
+        self.session_lock, self.persistent = None, False
+        self.session_dir = self.make_session_dir()
+        self.update_title()
+        QtWidgets.QMessageBox.warning(
+            self, 'Session', f'{why}\n\nThis window uses a temporary session: scans not saved as images are '
+            f'lost when it is closed. The kept session is in {paths.SESSION_DIR}.')
+
+    def confirm_unreadable(self, error):
+        """The kept session cannot be used. True: delete it and start a new one; False: it was kept
+        and this window uses a temporary session."""
+        Q = QtWidgets.QMessageBox
+        box = Q(Q.Icon.Warning, 'Session', f'The previous session cannot be opened:\n{error}', parent=self)
+        keep = box.addButton('Keep it, use a temporary session', Q.ButtonRole.RejectRole)
+        box.addButton('Delete it and start a new session', Q.ButtonRole.DestructiveRole)
+        box.setDefaultButton(keep)
+        box.setEscapeButton(keep)
+        box.exec()
+        if box.clickedButton() is keep:
+            self.detach_session('The previous session was kept unchanged.')
+            return False
+        return True
 
     def ask_continue(self, meta):
         """Continue the stored session? Starting a new one deletes its scans: asked twice."""
@@ -2233,14 +2275,15 @@ class MainWindow(QtWidgets.QMainWindow):
         return box.clickedButton() is delete
 
     def load_session(self, meta):
+        own = {'format', 'version', 'app', 'saved', 'current', 'scan_count', 'page_serial', 'pages'}
+        self.session_extra = {k: v for k, v in meta.items() if k not in own}
+        self.session_version = max(meta.get('version', 0), session.VERSION)
         pages = []
         for m in meta['pages']:
             try:
                 pages.append(Page.restored(m, self.session_dir))
             except (OSError, KeyError, ValueError) as e:
                 print(f'session: skipping {m.get("label")}: {e}', file=sys.stderr)
-        session.clean(self.session_dir, {os.path.basename(f) for p in pages
-                                         for f in (p.png_path, p.det_png, p.small_path) if f})
         self.page_serial = max([meta.get('page_serial', 0)] + [p.number for p in pages])
         self.scan_count = meta.get('scan_count', len(pages))
         for page in pages:
@@ -2255,18 +2298,28 @@ class MainWindow(QtWidgets.QMainWindow):
             self.session.setCurrentRow(self.pages.index(cur))
             self.session.blockSignals(False)
             self.show_page(cur)
+        session.clean(self.session_dir, {os.path.basename(f) for p in pages      # leftovers of a crash
+                                         for f in (p.png_path, p.det_png, p.small_path) if f})
         self.write_session()
         self.update_title()
-        self.step_label.setText(f'Session loaded: {len(self.pages)} scan(s)')
+        self.step_label.setText(f'Session loaded: {len(self.pages)} scan(s)' + (
+            f' (saved by {"SV600 Scanner " + meta["app"] if meta.get("app") else "a newer version"}: what this '
+            'version does not know, e.g. newer box options, is kept unchanged)' if session.newer(meta) else ''))
 
-    def clear_session(self):
-        for p in self.pages:
-            p.delete_files()
+    def forget_pages(self):
+        """Drop the pages from the window (their files stay)."""
         self.pages, self.page = [], None
         self.session.blockSignals(True)
         self.session.clear()
         self.session.blockSignals(False)
         self.scan_count = 0
+        self.show_placeholder()
+
+    def clear_session(self):
+        for p in self.pages:
+            p.delete_files()
+        self.forget_pages()
+        self.session_extra, self.session_version = {}, session.VERSION
         if self.persistent:
             session.clean(self.session_dir)
         self.write_session()

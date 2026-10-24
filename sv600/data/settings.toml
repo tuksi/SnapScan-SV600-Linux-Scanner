@@ -3,6 +3,10 @@
 # Every value below is the built-in default; change what you like. Deleting a line restores
 # its default. Command-line options override this file for a single run.
 
+# Settings format version, written by the program (do not change). An older program version
+# can use a newer file: it ignores what it does not know and leaves it in place.
+version = 2
+
 [output]
 # Where scans are saved. ~ means your home folder; the folder is created when needed.
 folder = "~/Pictures/SV600"

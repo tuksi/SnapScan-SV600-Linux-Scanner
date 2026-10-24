@@ -3,6 +3,12 @@
 Lookup order (later wins): DEFAULTS -> settings file (or --settings FILE) -> command line.
 The settings file is created from the commented template on first use; save() rewrites
 values in place so the explanations in the file are kept.
+
+Versioning: the file starts with `version = N` (the highest VERSION that saved it). Raise
+VERSION whenever settings are added or change meaning. An older program reading a newer file
+keeps working with it: unknown settings are ignored but stay in the file, a value it cannot
+accept falls back to its default for this run only and its line is not overwritten, so switching
+versions (another git branch, an older AppImage) never loses settings.
 """
 import copy
 import os
@@ -76,6 +82,8 @@ DEFAULTS = {
     },
 }
 
+VERSION = 2              # of the settings file format; see the module docstring
+
 BACKGROUNDS = ('auto', 'black_mat', 'desk', 'scanned')
 FORMATS = ('jpg', 'jpeg', 'png', 'tif', 'tiff', 'pdf', 'webp')
 
@@ -96,8 +104,13 @@ def _check(section, key, value, default, where):
     return value
 
 
+REJECTED = {}            # (section, key) -> default used instead of a file value this version cannot accept
+
+
 def load(path=None, create=True):
-    """Return the merged settings dict. Unknown keys warn; wrong types raise ValueError."""
+    """Return the merged settings dict. Unknown keys warn and are ignored; a value of the wrong
+    type or out of range warns and the default is used (see REJECTED)."""
+    REJECTED.clear()
     s = copy.deepcopy(DEFAULTS)
     if path is None:
         path = ensure_user_file() if create else paths.SETTINGS_FILE
@@ -107,6 +120,7 @@ def load(path=None, create=True):
         raise FileNotFoundError(f'settings file {path} not found')
     with open(path, 'rb') as f:
         user = tomllib.load(f)
+    user.pop('version', None)
     for section, values in user.items():
         if section not in s or not isinstance(values, dict):
             print(f'warning: {path}: unknown section [{section}] ignored', file=sys.stderr)
@@ -115,9 +129,34 @@ def load(path=None, create=True):
             if key not in s[section]:
                 print(f'warning: {path}: unknown setting {section}.{key} ignored', file=sys.stderr)
                 continue
-            s[section][key] = _check(section, key, value, s[section][key], path)
+            default = s[section][key]
+            try:
+                s[section][key] = _check(section, key, value, default, path)
+                validate(s)
+            except ValueError as e:
+                print(f'warning: {e}; using the default {default!r}', file=sys.stderr)
+                s[section][key] = default
+                REJECTED[(section, key)] = default
     validate(s)
     return s
+
+
+def file_version(path=None):
+    """Version of a settings file: 1 if it has none (written before versioning), 0 if missing."""
+    path = path or paths.SETTINGS_FILE
+    if not os.path.exists(path):
+        return 0
+    try:
+        with open(path, 'rb') as f:
+            v = tomllib.load(f).get('version', 1)
+    except (OSError, tomllib.TOMLDecodeError):
+        return 1
+    return v if isinstance(v, int) else 1
+
+
+def newer_file(path=None):
+    """True if the settings file was saved by a newer version of the program."""
+    return file_version(path) > VERSION
 
 
 def validate(s):
@@ -158,11 +197,15 @@ def save(s, path=None):
     """Write settings, keeping the template's comments: values are replaced line by line."""
     validate(s)
     path = path or paths.SETTINGS_FILE
+    version = max(VERSION, file_version(path))
     src = path if os.path.exists(path) else paths.SETTINGS_TEMPLATE
     lines = open(src, encoding='utf-8').read().splitlines()
     section, seen, headers = None, set(), {}
     out = []
     for line in lines:
+        if section is None and re.match(r'\s*version\s*=', line):
+            line = f'version = {version}'
+            seen.add((None, 'version'))
         m = re.match(r'\s*\[([A-Za-z_][A-Za-z0-9_]*)\]\s*$', line)
         if m:
             section = m.group(1)
@@ -171,7 +214,8 @@ def save(s, path=None):
             m = re.match(r'(\s*)([A-Za-z_][A-Za-z0-9_]*)(\s*=\s*)(.*)$', line)
             if m and section in s and m.group(2) in s[section]:
                 key = m.group(2)
-                line = f'{m.group(1)}{key}{m.group(3)}{_toml_value(s[section][key])}'
+                if REJECTED.get((section, key), object()) != s[section][key]:   # else: keep the file's value
+                    line = f'{m.group(1)}{key}{m.group(3)}{_toml_value(s[section][key])}'
                 seen.add((section, key))
         out.append(line)
     # values missing from the file (deleted by the user): put them back into their section
@@ -185,6 +229,9 @@ def save(s, path=None):
             out[at:at] = missing
         else:
             out += ['', f'[{section}]'] + missing
+    if (None, 'version') not in seen:                 # a file from before versioning
+        first = next((i for i, line in enumerate(out) if line.startswith('[')), len(out))
+        out[first:first] = [f'version = {version}', '']
     os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
     tmp = path + '.tmp'
     with open(tmp, 'w', encoding='utf-8') as f:

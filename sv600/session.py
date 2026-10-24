@@ -8,6 +8,12 @@ survives closing the program (paths.SESSION_DIR, ~/.local/share/sv600-linux/sess
   lock                held while a window uses the folder
 
 session.json is small and rewritten after every scan and edit; the images are never copied.
+
+Versioning: session.json holds the format VERSION and the program version that wrote it.
+Raise VERSION whenever what is stored changes, and only ever add: new fields at the end of a box,
+new keys in a page or at the top. An older program opens a newer session and keeps working
+with it: it carries what it does not know through unchanged (extra box fields, unknown keys)
+and writes the higher version back, so switching between versions loses nothing.
 """
 import fcntl
 import json
@@ -17,8 +23,11 @@ import time
 import cv2
 import numpy as np
 
+from . import __version__
+
 FORMAT = 'sv600-session'
-VERSION = 2
+VERSION = 2              # of the session format; see the module docstring
+BOX_FIELDS = 8           # cx, cy, w, h, angle, quarter, name, height (+ newer fields, carried along)
 META = 'session.json'
 LOCK = 'lock'
 
@@ -80,9 +89,11 @@ def store_page(folder, number, rgb, small, det=None):
     return out
 
 
-def write(folder, meta):
-    """Replace session.json (atomically)."""
-    meta = dict(meta, format=FORMAT, version=VERSION, saved=time.strftime('%Y-%m-%d %H:%M:%S'))
+def write(folder, meta, version=VERSION):
+    """Replace session.json (atomically). version: the format the content has, which is higher
+    than VERSION if it carries fields of a newer program."""
+    meta = dict(meta, format=FORMAT, version=max(version, VERSION), app=__version__,
+                saved=time.strftime('%Y-%m-%d %H:%M:%S'))
     path = os.path.join(folder, META)
     with open(path + '.part', 'w') as f:
         json.dump(meta, f, indent=1)
@@ -91,7 +102,7 @@ def write(folder, meta):
 
 def read(folder):
     """session.json as a dict, or None if there is no session. Pages whose scan is missing
-    are left out."""
+    are left out. A newer session is read too (see the module docstring): newer(meta) tells."""
     path = os.path.join(folder, META)
     if not os.path.exists(path):
         return None
@@ -99,10 +110,15 @@ def read(folder):
         meta = json.load(f)
     if meta.get('format') != FORMAT:
         raise ValueError(f'{path} is not an SV600 session')
-    if meta.get('version', 0) > VERSION:
-        raise ValueError(f'{path} was written by a newer version of this program')
     meta['pages'] = [m for m in meta.get('pages', []) if os.path.exists(os.path.join(folder, m['image']))]
     return meta
+
+
+def newer(meta):
+    """True if the session holds data of a newer program (a higher format, or boxes with more
+    fields than this version knows, as written before versioning)."""
+    return meta.get('version', 0) > VERSION or any(
+        len(b) > BOX_FIELDS for m in meta['pages'] for snap in m.get('history', []) for b in snap[1])
 
 
 def unsaved(meta):
