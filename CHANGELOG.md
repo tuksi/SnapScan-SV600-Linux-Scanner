@@ -59,6 +59,11 @@
 - **A session saved by a newer version crashed the app at startup** (e.g. after switching git
   branches). It now opens normally. A session that cannot be opened at all is kept unchanged,
   unless you choose to delete it, and the window uses a temporary session.
+- **Boxes came out too big with Background = `scanned`, sometimes far too big.** A bright object
+  scatters the scanner's light over the mat, so with it on the plate the mat no longer looks like
+  the empty scan (measured with a green cover: the whole mat greener, a band 20 % brighter, 3-5x
+  brighter around the book). Boxes now always come from outlines and colour, as with `black_mat`.
+  The comparison with the stored background only adds objects those miss.
 - **A setting value this version does not accept made all settings fall back to defaults**, and
   the next save wrote those defaults over the file. Now only that one setting uses its default,
   and its line in the file is left alone.

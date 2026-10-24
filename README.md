@@ -40,7 +40,7 @@ that installs a udev rule (needed once per computer on some distros).
 | Zoom / pan | mouse wheel / drag with right or middle button, **F** = fit |
 | Work area | drag the yellow dashed edges; outside is ignored by detection; remembered |
 | Find objects | **D** (also runs automatically after each scan) |
-| Scan background | the **arrow next to Scan** > *Scan background...*: scan the empty mat or desk once; detection then finds objects by comparing each scan with it (Settings > Detection > Background = `scanned`). Scan it again when the mat, scanner or light change |
+| Scan background | the **arrow next to Scan** > *Scan background...*: scan the empty mat or desk once; detection then also compares each scan with it, to find objects the normal outline and colour detection misses, e.g. a black cover on the black mat (Settings > Detection > Background = `scanned`). Scan it again when the mat, scanner or light change |
 | New box | drag on an empty spot |
 | Move / resize / rotate box | drag inside / drag a square handle / drag the round handle (hold **Shift** = fine rotation, 10x slower; **Ctrl** = 15 deg steps; the angle is shown while rotating) |
 | Magnifier | appears while dragging a corner/edge handle, a work-area handle or drawing a box (Settings > Display) |

@@ -195,6 +195,17 @@ def _find_objects(rgb, det=None, debug=None, prepare=None, small=None, backgroun
                <= p['outer_max_inner_fraction'] * o[1] for o in outer):
             continue                                   # an outer box takes over
         keep.append(r)
+    if bg == 'scanned':
+        # The comparison only adds objects the outline and colour cues miss (a black cover on a
+        # black mat): a bright object scatters the scanner's light over the mat, so with it on the
+        # plate the mat no longer looks like the empty scan (measured with a green cover: the whole
+        # mat greener, a band 20 % brighter, 3-5x brighter around the book), and blobs from the
+        # comparison grow far beyond the object. Everything it finds that overlaps an object found
+        # the normal way is dropped.
+        sure, _ = _find_objects(rgb, dict(p, background='black_mat'), None, prepare, small)
+        s = WORK_SCALE
+        sure = [((cx * s, cy * s), (w * s, h * s), ang) for (cx, cy), (w, h), ang in sure]
+        keep = sure + [r for r in keep if all(_inside(t, r) < 0.5 and _inside(r, t) < 0.5 for t in sure)]
     s = 1 / WORK_SCALE
     found = [((cx * s, cy * s), (w * s, h * s), ang) for (cx, cy), (w, h), ang in keep]
     # reading order: top to bottom, then left to right

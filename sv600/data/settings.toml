@@ -75,10 +75,12 @@ fill_colour = [0, 0, 0]
 #                 their outline and by any clear colour (see mat_colour_chroma)
 #   "desk"      = always a coloured desk (e.g. wood): objects are found by their outline and by
 #                 colour different from the desk (see desk_colour_threshold)
-#   "scanned"   = compare with a stored scan of the empty mat/desk: GUI > Scan (arrow) > Scan
-#                 background... (sets this). Anything that differs from it at the same spot is an
-#                 object. Uses "auto" until a background is stored. Scan it again when the mat,
-#                 scanner or room light change, or after changing correction settings.
+#   "scanned"   = like "black_mat", plus a comparison with a stored scan of the empty mat/desk
+#                 (GUI > Scan (arrow) > Scan background..., which sets this) that adds objects the
+#                 outlines and colour miss, e.g. a black cover on the black mat. Boxes always come
+#                 from outlines and colour: a bright object scatters light over the mat, so the
+#                 comparison alone makes boxes too big. Uses "auto" until a background is stored.
+#                 Scan it again when the mat, scanner or room light change.
 background = "auto"
 # For "scanned": colour difference from the stored background (Lab, corrected colours) above
 # which a pixel counts as an object. Measured on the black mat: bare mat ~4.5 (99 % below 10),
