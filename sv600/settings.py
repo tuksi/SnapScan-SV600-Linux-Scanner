@@ -41,9 +41,11 @@ DEFAULTS = {
         'fill_colour': [0, 0, 0],
     },
     'detection': {
+        'background': 'auto',
+        'background_threshold': 12.0,
         'min_side_mm': 30.0,
         'min_area_cm2': 30.0,
-        'min_rectangularity': 0.80,
+        'min_rectangularity': 0.70,
         'desk_colour_threshold': 18.0,
         'dark_limit': 45,
         'dark_colour_chroma': 14.0,
@@ -54,6 +56,7 @@ DEFAULTS = {
         'outer_gap_mm': 5.0,
         'outer_max_inner_fraction': 0.6,
         'thin_object_mm': 4.0,
+        'mat_colour_chroma': 12.0,
         'row_height_mm': 50.0,
     },
     'continuous': {
@@ -73,6 +76,7 @@ DEFAULTS = {
     },
 }
 
+BACKGROUNDS = ('auto', 'black_mat', 'desk', 'scanned')
 FORMATS = ('jpg', 'jpeg', 'png', 'tif', 'tiff', 'pdf', 'webp')
 
 
@@ -124,6 +128,8 @@ def validate(s):
         raise ValueError('output.jpeg_quality must be 1-100')
     if not 0 <= o['png_compression'] <= 9:
         raise ValueError('output.png_compression must be 0-9')
+    if s['detection']['background'] not in BACKGROUNDS:
+        raise ValueError(f'detection.background must be one of {", ".join(BACKGROUNDS)}')
     if s['correction']['area'] not in ('inscribed', 'full'):
         raise ValueError('correction.area must be "inscribed" or "full"')
     if s['continuous']['timer_s'] < 0:
@@ -134,8 +140,6 @@ def validate(s):
         raise ValueError('gui.loupe_size_px must be between 80 and 1000')
     if s['correction']['head_height_mm'] < 0 or s['split']['object_height_mm'] < 0:
         raise ValueError('heights must not be negative')
-    if s['split']['margin_mm'] < 0:
-        raise ValueError('split.margin_mm must not be negative')
 
 
 def _toml_value(v):

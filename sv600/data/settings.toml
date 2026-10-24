@@ -50,7 +50,7 @@ cutoff_percent = 0.5
 [split]
 # Find each object (page, book), straighten it and save it as NAME_1.EXT, NAME_2.EXT, ...
 enabled = false
-# Desk kept around each object, in mm.
+# Desk kept around each object, in mm. Negative = cut that much off the object's edges.
 margin_mm = 10.0
 # Default height of the objects' top surface above the desk, in mm (e.g. 40 for the cover of a
 # 4 cm thick book lying closed). Raised objects look ~12 % too big at 40 mm; with the height
@@ -64,12 +64,31 @@ fill_colour = [0, 0, 0]
 [detection]
 # How objects are told apart from the desk (used by split). Measured on a wooden desk;
 # adjust if you use a different surface, e.g. the ScanSnap black mat.
+# What the objects lie on:
+#   "auto"      = tell from the scan (a coloured desk, or a black/grey mat if the area's edges
+#                 are dark and no desk colour shows there)
+#   "black_mat" = always a black or grey mat (e.g. the ScanSnap mat): objects are found by
+#                 their outline and by any clear colour (see mat_colour_chroma)
+#   "desk"      = always a coloured desk (e.g. wood): objects are found by their outline and by
+#                 colour different from the desk (see desk_colour_threshold)
+#   "scanned"   = compare with a stored scan of the empty mat/desk: GUI > Scan (arrow) > Scan
+#                 background... (sets this). Anything that differs from it at the same spot is an
+#                 object. Uses "auto" until a background is stored. Scan it again when the mat,
+#                 scanner or room light change, or after changing correction settings.
+background = "auto"
+# For "scanned": colour difference from the stored background (Lab, corrected colours) above
+# which a pixel counts as an object. Measured on the black mat: bare mat ~4.5 (99 % below 10),
+# black hair on a cover ~11, dark green spine ~25. At 10 stray blobs of mat appear, at 8 the
+# mat merges with the objects; 12-14 is safe.
+background_threshold = 12.0
 # Objects smaller than this are ignored (plugs, pens, small clutter).
 min_side_mm = 30.0
 min_area_cm2 = 30.0
 # Object area / area of its enclosing rotated rectangle. Books and pages are ~0.95+;
-# cables and heaps of clutter are ~0.5. Lower it for objects with rounded corners.
-min_rectangularity = 0.80
+# cables and heaps of clutter are ~0.35-0.5. A black-on-black cover part on a black mat (no
+# outline, no colour) bites a piece out of the shape: measured 0.75-0.79 for such a book.
+# Lower it for objects with rounded corners.
+min_rectangularity = 0.70
 # Colour (hue) difference from the desk that counts as "not desk", in Lab a/b units.
 # Measured: plain desk ~2, lamp glare near the base ~7, white paper ~30.
 desk_colour_threshold = 18.0
@@ -97,6 +116,11 @@ outer_gap_mm = 5.0
 outer_max_inner_fraction = 0.6
 # Anything thinner than about twice this (cables, pens, wood-grain streaks) is removed.
 thin_object_mm = 4.0
+# On a black or grey mat (no coloured desk found), colour (Lab chroma) in the corrected scan
+# above this counts as an object, so dark covers with hardly any outline are still found.
+# Measured on the black ScanSnap mat: mat ~5 (99 % below 22 in specks), dark green spine ~20,
+# deep purple cover 23-35. Black, grey and white objects are found by their outline only.
+mat_colour_chroma = 12.0
 # Reading order of cut-outs: objects whose centres are within this height count as one row
 # (numbered left to right), rows are numbered top to bottom.
 row_height_mm = 50.0

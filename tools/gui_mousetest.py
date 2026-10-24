@@ -77,7 +77,7 @@ left_mid = QPointF(cx - bw / 2 * math.cos(t), cy - bw / 2 * math.sin(t))
 drag(left_mid, left_mid + QPointF(-120, 0))
 _, _, bw3, bh3, _ = b.box()
 check('resize from edge', bw3 > bw + 100 and abs(bh3 - bh) < 1, f'{bw:.0f}x{bh:.0f} -> {bw3:.0f}x{bh3:.0f}')
-# 4. rotate handle: drag it to the right of the centre -> angle ~ +90; with Shift it snaps to 15 deg
+# 4. rotate handle: drag it to the right of the centre -> angle ~ +90; Shift = fine, Ctrl snaps to 15 deg
 cx, cy, bw, bh, ang = b.box()
 t = math.radians(ang)
 s = w.view.transform().m11()

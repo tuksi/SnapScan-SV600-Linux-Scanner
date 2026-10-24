@@ -8,9 +8,12 @@ skew angle; the crop is cut from the full-resolution image with one affine warp.
 
 Thresholds come from the [detection] and [split] settings (see data/settings.toml).
 """
+import os
+
 import cv2
 import numpy as np
 
+from . import paths
 from . import settings as sv600settings
 
 DPI = 300
@@ -42,6 +45,35 @@ def desk_distance(lab):
     ref = np.median(lab.reshape(-1, 3)[sel], axis=0)
     d = lab.astype(np.float32) - ref
     return np.hypot(d[:, :, 1], d[:, :, 2]), ref
+
+
+def save_background(rgb, path=None):
+    """Store a scan of the empty mat/desk (corrected) for background "scanned": a reduced
+    (WORK_SCALE) lossless copy, the same grid detection works on."""
+    path = path or paths.BACKGROUND_FILE
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    small = cv2.resize(rgb, None, fx=WORK_SCALE, fy=WORK_SCALE, interpolation=cv2.INTER_AREA)
+    if not cv2.imwrite(path, np.ascontiguousarray(small[:, :, ::-1])):
+        raise OSError(f'could not write {path}')
+
+
+def load_background(shape, path=None):
+    """The stored background for a full scan of this shape (H, W, ...), or None if there is
+    none or it was taken with a different scan size (e.g. another correction area)."""
+    path = path or paths.BACKGROUND_FILE
+    bgr = cv2.imread(path, cv2.IMREAD_COLOR) if os.path.exists(path) else None
+    if bgr is None:
+        return None
+    want = cv2.resize(np.zeros((shape[0], shape[1]), np.uint8), None, fx=WORK_SCALE, fy=WORK_SCALE).shape
+    return np.ascontiguousarray(bgr[:, :, ::-1]) if bgr.shape[:2] == want else None
+
+
+def _edge_fraction(mask):
+    """Fraction of the band along the edges of the area (mostly background) where mask is set."""
+    H, W = mask.shape
+    b = max(2, min(H, W) // 25)
+    band = np.concatenate([mask[:b].ravel(), mask[-b:].ravel(), mask[:, :b].ravel(), mask[:, -b:].ravel()])
+    return band.mean()
 
 
 def _candidates(edges, colour, gap_mm, p, mm, debug=None):
@@ -86,7 +118,7 @@ def _inside(inner, outer):
     return area / max(inner[1][0] * inner[1][1], 1e-6)
 
 
-def _find_objects(rgb, det=None, debug=None, prepare=None, small=None):
+def _find_objects(rgb, det=None, debug=None, prepare=None, small=None, background=None):
     """Return a list of cv2.minAreaRect tuples (centre, (w, h), angle) in full-res pixels.
 
     det: the [detection] settings (defaults from sv600settings.DEFAULTS).
@@ -95,6 +127,7 @@ def _find_objects(rgb, det=None, debug=None, prepare=None, small=None):
     unless the boxes inside fill most of it (then the bigger one is two objects merged).
     """
     p = dict(sv600settings.DEFAULTS['detection'], **(det or {}))
+    reduced = small is None and prepare is None            # small will be rgb's own colours
     if small is None:
         small = cv2.resize(rgb, None, fx=WORK_SCALE, fy=WORK_SCALE, interpolation=cv2.INTER_AREA)
     if prepare is not None:            # e.g. undo the colour calibration: thresholds are tuned
@@ -107,9 +140,35 @@ def _find_objects(rgb, det=None, debug=None, prepare=None, small=None):
         edges |= cv2.Canny(c, p['edge_low'], p['edge_high'])
     # cue 2: anything clearly not desk-coloured (also works where an outline is open)
     lab = cv2.cvtColor(blur, cv2.COLOR_RGB2LAB)
-    dist, _ = desk_distance(lab)
-    if dist is None:                           # no coloured desk (black/grey mat): outlines only
+    bg = p['background']
+    if bg == 'scanned' and background is None:
+        bg = 'auto'                                           # nothing stored (yet)
+    dist = None if bg in ('black_mat', 'scanned') else desk_distance(lab)[0]
+    if bg == 'auto' and dist is not None and _edge_fraction(dist < p['desk_colour_threshold']) < 0.05:
+        # the "desk" colour is not around the edges, so it is an object's: e.g. books filling a
+        # work area on a black mat (measured: 0.00 there, 0.24-0.74 on the wooden desk)
+        dist = None
+    if bg == 'scanned':
+        # anything that differs from the stored empty mat/desk at the same spot (Lab, corrected
+        # colours: also takes care of uneven lighting across the plate)
+        corr = small if reduced else cv2.resize(rgb, (small.shape[1], small.shape[0]),
+                                                interpolation=cv2.INTER_AREA)
+        lab_now = cv2.cvtColor(cv2.GaussianBlur(corr, (5, 5), 0), cv2.COLOR_RGB2LAB).astype(np.float32)
+        if background.shape[:2] != corr.shape[:2]:          # rounding of a work area's edges
+            background = cv2.resize(background, (corr.shape[1], corr.shape[0]), interpolation=cv2.INTER_AREA)
+        lab_bg = cv2.cvtColor(cv2.GaussianBlur(background, (5, 5), 0), cv2.COLOR_RGB2LAB).astype(np.float32)
+        colour = (np.linalg.norm(lab_now - lab_bg, axis=2) > p['background_threshold']).astype(np.uint8) * 255
+    elif dist is None and bg == 'desk':              # no desk colour found: outlines only
         colour = np.zeros(lab.shape[:2], np.uint8)
+    elif dist is None:
+        # no coloured desk (black/grey mat): anything clearly coloured is an object. Measured on
+        # rgb (colour-calibrated): in the scanner's own colours a dark cover is nearly as black
+        # as the mat (mat L 6, dark green spine L 8 / chroma 2) and has hardly any outline.
+        corr = small if reduced else cv2.resize(rgb, (small.shape[1], small.shape[0]),
+                                                interpolation=cv2.INTER_AREA)
+        clab = cv2.cvtColor(cv2.GaussianBlur(corr, (5, 5), 0), cv2.COLOR_RGB2LAB).astype(np.float32)
+        chroma = np.hypot(clab[:, :, 1] - 128, clab[:, :, 2] - 128)
+        colour = (chroma > p['mat_colour_chroma']).astype(np.uint8) * 255
     else:
         # dark AND colourless (scanner base, shadows, floor at the sides) is left to the edge cue,
         # so a page pushed against the scanner is not merged with the base; dark but coloured
@@ -143,17 +202,18 @@ def _find_objects(rgb, det=None, debug=None, prepare=None, small=None):
     return found, dict(edges=edges, colour=colour, solid=solid, small=small)
 
 
-def find_objects(rgb, det=None, debug=None, roi=None, prepare=None, small=None):
+def find_objects(rgb, det=None, debug=None, roi=None, prepare=None, small=None, background=None):
     """Find objects; optionally only inside roi = (x0, y0, x1, y1) in full-res pixels.
 
     small: an already reduced (WORK_SCALE) copy to detect on instead of rgb, e.g. the copy
     sv600.correct made before the colour calibration. prepare: applied to the reduced copy.
+    background: the stored empty mat/desk (load_background) for detection.background "scanned".
 
     With a work area the detection simply runs on that part of the scan, so clutter outside
     it can neither be found nor merge with objects inside it.
     """
     if roi is None:
-        return _find_objects(rgb, det, debug, prepare, small)
+        return _find_objects(rgb, det, debug, prepare, small, background)
     H, W = rgb.shape[:2]
     x0, y0 = max(0, int(roi[0])), max(0, int(roi[1]))
     x1, y1 = min(W, int(roi[2])), min(H, int(roi[3]))
@@ -164,7 +224,11 @@ def find_objects(rgb, det=None, debug=None, roi=None, prepare=None, small=None):
         s0, s1 = int(round(x0 * WORK_SCALE)), int(round(y0 * WORK_SCALE))
         sub = np.ascontiguousarray(small[s1:int(round(y1 * WORK_SCALE)), s0:int(round(x1 * WORK_SCALE))])
         x0, y0 = s0 / WORK_SCALE, s1 / WORK_SCALE        # keep offsets on the reduced grid
-    found, extra = _find_objects(np.ascontiguousarray(rgb[int(y0):y1, int(x0):x1]), det, debug, prepare, sub)
+    if background is not None:
+        s0, s1 = int(round(x0 * WORK_SCALE)), int(round(y0 * WORK_SCALE))
+        background = np.ascontiguousarray(background[s1:int(round(y1 * WORK_SCALE)), s0:int(round(x1 * WORK_SCALE))])
+    found, extra = _find_objects(np.ascontiguousarray(rgb[int(y0):y1, int(x0):x1]), det, debug, prepare, sub,
+                                 background)
     return [((cx + x0, cy + y0), wh, ang) for (cx, cy), wh, ang in found], extra
 
 
@@ -182,8 +246,8 @@ def box_from_rect(rect, margin_mm=0.0):
     while ang <= -45:
         ang += 90
         w, h = h, w
-    m = margin_mm * PX_PER_MM
-    return cx, cy, w + 2 * m, h + 2 * m, ang
+    m = margin_mm * PX_PER_MM                           # negative: cut into the object
+    return cx, cy, max(1.0, w + 2 * m), max(1.0, h + 2 * m), ang
 
 
 def height_scale(height_mm, head_height_mm):

@@ -1,11 +1,13 @@
 """SV600 scanner GUI: scan, preview, work area, editable crop boxes, quarter turns, save.
 
 Mouse: wheel = zoom, right/middle drag = pan, drag on empty space = new box,
-drag inside a box = move, corner/edge handles = resize, round handle = rotate.
+drag inside a box = move, corner/edge handles = resize, round handle = rotate
+(hold Shift for fine rotation, Ctrl to snap to 15 deg).
 Keys: F5/Space scan (or the Scan button on the SV600), Ctrl+K continuous, Esc stop,
 Ctrl+Z / Ctrl+Shift+Z undo / redo, D detect, R / Shift+R turn output 90 deg, Delete remove box,
 [ ] fine rotate, arrows nudge, F fit, Ctrl+S save, Ctrl+Shift+S save all, Ctrl+O open,
-Ctrl+, settings.
+Ctrl+N new session, Ctrl+, settings.
+The session (every scan, its boxes and undo history) is kept and offered again at the next start.
 """
 import json
 import math
@@ -24,6 +26,8 @@ from .output import DPI
 
 HANDLE_PX = 9            # handle size on screen
 ROT_HANDLE_PX = 34       # distance of the rotate handle above the box, on screen
+ANGLE_LABEL_PX = 70      # room around the rotate handle for the angle shown while rotating
+FINE_ROTATION = 0.1      # rotation per mouse movement with Shift held
 THUMB = 220              # thumbnail size
 BOX_COLOURS = ['#2ecc71', '#3498db', '#e67e22', '#9b59b6', '#e74c3c', '#1abc9c', '#f1c40f']
 
@@ -163,7 +167,7 @@ class BoxItem(HandleMixin, QtWidgets.QGraphicsObject):
         return QPointF(0, -self.h / 2 - ROT_HANDLE_PX / view_scale(self))
 
     def boundingRect(self):
-        pad = (ROT_HANDLE_PX + 2 * HANDLE_PX) / max(view_scale(self), 1e-6)
+        pad = (ROT_HANDLE_PX + 2 * HANDLE_PX + ANGLE_LABEL_PX) / max(view_scale(self), 1e-6)
         return self.local_rect().adjusted(-pad, -pad, pad, pad)
 
     def shape(self):
@@ -218,6 +222,31 @@ class BoxItem(HandleMixin, QtWidgets.QGraphicsObject):
             painter.drawLine(QPointF(0, r.top()), rh)
             painter.setBrush(col)
             painter.drawEllipse(rh, hs * 0.8, hs * 0.8)
+            if self.drag and self.drag[0] == 'rot':
+                self.paint_angle(painter, rh, s)
+
+    def paint_angle(self, painter, at, s):
+        """The current angle, upright on screen, just outside the rotate handle."""
+        painter.save()
+        painter.translate(at)
+        painter.rotate(-self.rotation())
+        painter.scale(1 / s, 1 / s)                    # screen pixels from here on
+        f = painter.font()
+        f.setPixelSize(14)
+        f.setBold(True)
+        painter.setFont(f)
+        label = f'{self.rotation():.2f}°'
+        tw, th = QtGui.QFontMetricsF(f).horizontalAdvance(label) + 12, 22
+        # put it on the side of the handle that points away from the box
+        t = math.radians(self.rotation())
+        ox, oy = math.sin(t), -math.cos(t)
+        r = QRectF(ox * (tw / 2 + 12) - tw / 2, oy * (th / 2 + 12) - th / 2, tw, th)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QtGui.QColor(0, 0, 0, 190))
+        painter.drawRoundedRect(r, 4, 4)
+        painter.setPen(QtGui.QPen(Qt.GlobalColor.white))
+        painter.drawText(r, Qt.AlignmentFlag.AlignCenter, label)
+        painter.restore()
 
     # interaction
     def hoverMoveEvent(self, e):
@@ -233,7 +262,14 @@ class BoxItem(HandleMixin, QtWidgets.QGraphicsObject):
             self.setSelected(True)
         name = self.hit_handle(e.pos(), self.local_rect(), {'rot': self.rot_handle()})
         self.drag = (name or 'move', e.scenePos(), self.box())
+        self.rot_last = self.pointer_angle(e.scenePos())   # rotation follows mouse movement
+        self.rot_free = self.rotation()                    # angle before snapping
+        if name == 'rot':
+            self.update()                                  # show the angle
         e.accept()
+
+    def pointer_angle(self, sp):
+        return math.degrees(math.atan2(sp.y() - self.pos().y(), sp.x() - self.pos().x())) + 90
 
     def mouseMoveEvent(self, e):
         if not self.drag:
@@ -245,8 +281,14 @@ class BoxItem(HandleMixin, QtWidgets.QGraphicsObject):
             d = sp - start
             self.setPos(cx + d.x(), cy + d.y())
         elif mode == 'rot':
-            a = math.degrees(math.atan2(sp.y() - cy, sp.x() - cx)) + 90
-            if e.modifiers() & Qt.KeyboardModifier.ShiftModifier:
+            # incremental, so pressing / releasing Shift mid-drag does not make the box jump
+            a = self.pointer_angle(sp)
+            d = (a - self.rot_last + 180) % 360 - 180
+            self.rot_last = a
+            mods = e.modifiers()
+            self.rot_free += d * (FINE_ROTATION if mods & Qt.KeyboardModifier.ShiftModifier else 1)
+            a = self.rot_free
+            if mods & Qt.KeyboardModifier.ControlModifier:
                 a = round(a / 15) * 15
             self.setRotation((a + 180) % 360 - 180)
         else:
@@ -276,6 +318,7 @@ class BoxItem(HandleMixin, QtWidgets.QGraphicsObject):
         loupe(self, None)
         before = self.drag[2] if self.drag else None
         self.drag = None
+        self.update()                                      # hide the angle
         self.changed.emit()
         if before is not None and before != self.box():
             self.edited.emit()
@@ -557,7 +600,9 @@ class SettingsDialog(QtWidgets.QDialog):
             'fill_colour': 'Fill colour', 'min_side_mm': 'Min side (mm)', 'min_area_cm2': 'Min area (cm²)',
             'min_rectangularity': 'Min rectangularity', 'dark_limit': 'Dark limit (L)',
             'outline_gap_mm': 'Outline gap (mm)', 'merge_gap_mm': 'Merge gap (mm)',
-            'thin_object_mm': 'Thin object (mm)', 'row_height_mm': 'Row height (mm)',
+            'thin_object_mm': 'Thin object (mm)',
+            'mat_colour_chroma': 'Mat: colour threshold',
+            'background': 'Background', 'background_threshold': 'Scanned background: threshold', 'row_height_mm': 'Row height (mm)',
             'usb_timeout_s': 'USB timeout (s)', 'read_timeout_s': 'Read timeout (s)',
             'image_ready_timeout_s': 'Image-ready timeout (s)', 'enabled': 'Enabled',
             'head_height_mm': 'Head height (mm, 0 = calibration)', 'object_height_mm': 'Object height (mm)',
@@ -565,10 +610,12 @@ class SettingsDialog(QtWidgets.QDialog):
             'auto_save': 'Auto-save each scan', 'colour': 'Colour calibration', 'loupe': 'Magnifier when placing corners',
             'loupe_zoom': 'Magnifier zoom', 'loupe_size_px': 'Magnifier size (px)'}
     CHOICES = {('output', 'format'): ['jpg', 'png', 'tif', 'pdf', 'webp'],
-               ('correction', 'area'): ['inscribed', 'full']}
+               ('correction', 'area'): ['inscribed', 'full'],
+               ('detection', 'background'): list(settings.BACKGROUNDS)}
     RANGES = {('output', 'jpeg_quality'): (1, 100), ('output', 'png_compression'): (0, 9),
               ('detection', 'dark_limit'): (0, 255), ('detection', 'edge_low'): (1, 500),
-              ('detection', 'edge_high'): (1, 500), ('gui', 'loupe_size_px'): (80, 1000)}
+              ('detection', 'edge_high'): (1, 500), ('gui', 'loupe_size_px'): (80, 1000),
+              ('split', 'margin_mm'): (-1000, 1000)}
 
     def __init__(self, cfg, parent=None):
         super().__init__(parent)
@@ -630,7 +677,7 @@ class SettingsDialog(QtWidgets.QDialog):
             w.setValue(value)
         elif isinstance(default, float):
             w = QtWidgets.QDoubleSpinBox()
-            w.setRange(0, 100000)
+            w.setRange(*self.RANGES.get(k, (0, 100000)))
             w.setDecimals(2)
             w.setValue(value)
         elif isinstance(default, list):                       # fill colour
@@ -933,8 +980,8 @@ class Page:
         self.saved_boxes = None       # boxes part of the snapshot at the last save
         self.base = None              # file base name once saved (re-saves overwrite it)
         self.files = []               # files written for this page
-        self.png_path = None          # lossless copy encoded for session files (reload source)
-        self.det_png = None
+        self.png_path = None          # lossless copy in the session folder (reload source), once stored
+        self.det_png = self.small_path = None
         self.hint, self.prefix = None, ''
         import cv2
         self.set_small(cv2.resize(image, None, fx=0.25, fy=0.25, interpolation=cv2.INTER_AREA))
@@ -947,13 +994,17 @@ class Page:
             small, (max(1, int(small.shape[1] * h / small.shape[0])), h), interpolation=cv2.INTER_AREA)))
 
     @classmethod
-    def restored(cls, meta, png, det, small, size, session_dir, number):
-        """A page from a session file (its image is read from png when shown)."""
+    def restored(cls, meta, session_dir):
+        """A page of the stored session (its scan is read from the PNG when shown)."""
+        import cv2
         p = cls.__new__(cls)
-        p.number, p.label, p.session_dir = number, meta['label'], session_dir
-        p._image, p.size = None, tuple(size)
-        p.park_path = os.path.join(session_dir, f'page{number:04d}.npy')
-        p.source, p.png_path, p.det_png = None, png, None
+        p.number, p.label, p.session_dir = meta['number'], meta['label'], session_dir
+        p._image, p.size = None, tuple(meta['size'])
+        p.park_path = os.path.join(session_dir, f'page{p.number:04d}.npy')
+        p.source = None
+        p.png_path = os.path.join(session_dir, meta['image'])
+        p.det_png = os.path.join(session_dir, meta['det_image']) if meta.get('det_image') else None
+        p.small_path = os.path.join(session_dir, meta['small_image'])
         p.history = [session.snapshot_from_json(h) for h in meta['history']]
         p.pos = meta['pos']
         p.last_kind, p.last_time = None, 0.0
@@ -961,12 +1012,23 @@ class Page:
         p.saved_boxes = None if sb is None else tuple(tuple(b) for b in sb)
         p.base, p.files, p.prefix = meta.get('base'), list(meta.get('files', [])), meta.get('prefix', '')
         kind = meta.get('hint')
-        p.hint = det if kind == 'small' else ('undo' if kind == 'undo' else None)
+        p.hint = 'undo' if kind == 'undo' else None
+        if kind == 'small' and p.det_png:
+            p.hint = session.read_png(p.det_png)
+        small = cv2.imread(p.small_path, cv2.IMREAD_COLOR)
+        if small is None:                                  # thumbnail copy lost: make it again
+            small = cv2.resize(p.image(), None, fx=0.25, fy=0.25, interpolation=cv2.INTER_AREA)
+            p._image = None
+        else:
+            small = np.ascontiguousarray(small[:, :, ::-1])
         p.set_small(small)
         return p
 
     def meta(self):
-        return {'label': self.label, 'prefix': self.prefix, 'size': list(self.size),
+        name = lambda path: os.path.basename(path) if path else None
+        return {'number': self.number, 'image': name(self.png_path), 'small_image': name(self.small_path),
+                'det_image': name(self.det_png) if isinstance(self.hint, np.ndarray) else None,
+                'label': self.label, 'prefix': self.prefix, 'size': list(self.size),
                 'base': self.base, 'files': self.files,
                 'saved_boxes': None if self.saved_boxes is None else [list(b) for b in self.saved_boxes],
                 'history': [[list(a), [list(b) for b in bx], list(sel)] for a, bx, sel in self.history],
@@ -1008,6 +1070,16 @@ class Page:
             os.remove(self.park_path)
         except OSError:
             pass
+
+    def delete_files(self):
+        """Remove the page from the session folder (files saved as images stay)."""
+        self.drop_files()
+        for f in (self.png_path, self.det_png, self.small_path):
+            if f:
+                try:
+                    os.remove(f)
+                except OSError:
+                    pass
 
 
 class ButtonWatcher(QtCore.QThread):
@@ -1064,6 +1136,8 @@ class ButtonWatcher(QtCore.QThread):
 
 # ----------------------------------------------------------------------------- main window
 class MainWindow(QtWidgets.QMainWindow):
+    stored = Signal(object, object)     # page, its files in the session folder (or the error)
+
     def __init__(self):
         super().__init__()
         self.setWindowTitle(f'SV600 Scanner {__version__}')
@@ -1080,9 +1154,12 @@ class MainWindow(QtWidgets.QMainWindow):
         self.worker = None
         self.watcher = None
         self.scan_count = 0
-        self.session_dir = self.make_session_dir()
-        self.session_path = None          # .sv600session file of this session, once saved
-        self.session_modified = False
+        self.session_dir = self.make_session_dir()   # temporary until attach_session()
+        self.persistent = False           # True: the session folder survives closing the program
+        self.session_lock = None
+        from concurrent.futures import ThreadPoolExecutor
+        self.storer = ThreadPoolExecutor(max_workers=1)   # writes scans into the session folder
+        self.stored.connect(self.page_stored)
 
         self.scene = QtWidgets.QGraphicsScene(self)
         self.view = ImageView(self.scene)
@@ -1096,6 +1173,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.make_side_panel()
         self.make_status()
         self.thumb_timer = QtCore.QTimer(self, singleShot=True, interval=150, timeout=self.update_thumbs)
+        self.meta_timer = QtCore.QTimer(self, singleShot=True, interval=500, timeout=self.write_session)
         self.countdown = QtCore.QTimer(self, interval=100, timeout=self.countdown_tick)
         self.countdown_end = 0.0
         geo = self.state.get('geometry')
@@ -1122,7 +1200,6 @@ class MainWindow(QtWidgets.QMainWindow):
         if not value:
             for p in self.pages:
                 p.saved_boxes = p.boxes_now()
-            self.session_modified = False
 
     @staticmethod
     def make_session_dir():
@@ -1168,7 +1245,8 @@ class MainWindow(QtWidgets.QMainWindow):
                              'Scan and save the files as PREFIX_001, PREFIX_002, ... (prefix on the left; '
                              'Enter in the prefix field also scans)')
         self.a_scan = act('Scan', self.scan_plain, ['F5', 'Space'], SP.SP_MediaPlay,
-                          'Scan with the SV600 (or press the Scan button on the scanner)')
+                          'Scan with the SV600 (or press the Scan button on the scanner). '
+                          'Arrow: scan the empty background for detection to compare with')
         self.a_cont = act('Continuous', self.toggle_continuous, 'Ctrl+K', SP.SP_MediaSeekForward,
                           'Continuous scanning: after each scan get ready for the next one '
                           '(timer / scanner button, auto-save: see Settings > Continuous)', checkable=True)
@@ -1176,6 +1254,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.a_undo = act('Undo', self.undo, 'Ctrl+Z', SP.SP_ArrowLeft)
         self.a_redo = act('Redo', self.redo, ['Ctrl+Shift+Z', 'Ctrl+Y'], SP.SP_ArrowRight)
         self.a_detect = act('Detect', self.detect, 'D', SP.SP_BrowserReload, 'Find objects inside the work area')
+        self.a_bg_scan = act('Scan background...', self.scan_background, None, SP.SP_MediaPlay,
+                             'Scan the empty mat/desk once; detection then finds objects by comparing with it '
+                             '(Settings > Detection > Background = scanned)')
         self.a_area = act('Reset area', self.reset_work_area, None, SP.SP_TitleBarMaxButton,
                           'Make the work area the whole scan')
         self.a_ccw = act('Turn left', lambda: self.turn(-1), 'Shift+R', SP.SP_ArrowBack,
@@ -1183,9 +1264,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.a_cw = act('Turn right', lambda: self.turn(1), 'R', SP.SP_ArrowForward,
                         'Turn the selected output 90 deg clockwise')
         self.a_del = act('Delete box', self.delete_selected, ['Delete', 'Backspace'], SP.SP_TrashIcon)
-        self.a_save = act('Save', self.save, 'Ctrl+S', SP.SP_DialogSaveButton, 'Save this scan (boxes and full scan)')
+        self.a_save = act('Save', self.save, 'Ctrl+S', SP.SP_DialogSaveButton,
+                          'Save this scan (boxes, and the full scan if "Also save the full scan" is on)')
         self.a_save_all = act('Save all', self.save_all, 'Ctrl+Shift+S', SP.SP_DriveHDIcon,
                               'Save every unsaved scan in this session')
+        self.a_new_session = act('New session', self.new_session, 'Ctrl+N', SP.SP_FileIcon,
+                                 'Start an empty session: the scans of this one are deleted '
+                                 '(images you saved stay)')
         self.a_settings = act('Settings...', self.open_settings, 'Ctrl+,', SP.SP_FileDialogDetailedView)
         act('Fit', self.view.fit, 'F', None, 'Fit the scan in the window')
         act('Select all', self.select_all, 'Ctrl+A')
@@ -1205,6 +1290,11 @@ class MainWindow(QtWidgets.QMainWindow):
         for a in (self.a_cont, self.a_open, None, self.a_undo, self.a_redo, None,
                   self.a_detect, self.a_area, None, self.a_ccw, self.a_cw, self.a_del, None):
             tb.addSeparator() if a is None else tb.addAction(a)
+        scan_menu = QtWidgets.QMenu(self)                  # arrow next to Scan
+        scan_menu.addAction(self.a_bg_scan)
+        scan_btn = tb.widgetForAction(self.a_scan)
+        scan_btn.setMenu(scan_menu)
+        scan_btn.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.MenuButtonPopup)
         lab = QtWidgets.QLabel(' Height ')
         self.height_box = make_height_box()
         self.height_box.setKeyboardTracking(False)          # apply on Enter / arrows, not per keystroke
@@ -1218,28 +1308,8 @@ class MainWindow(QtWidgets.QMainWindow):
         tb.addWidget(lab)
         tb.addWidget(self.height_box)
         tb.addSeparator()
-        self.session_menu = QtWidgets.QMenu('Session', self)
-        self.a_sess_new = self.session_menu.addAction('New session', self.new_session)
-        self.a_sess_open = self.session_menu.addAction('Open session...', self.open_session)
-        self.a_sess_open.setShortcut(QtGui.QKeySequence('Ctrl+Shift+O'))
-        self.a_sess_save = self.session_menu.addAction('Save session', self.save_session)
-        self.a_sess_save.setShortcut(QtGui.QKeySequence('Ctrl+E'))
-        self.a_sess_save_as = self.session_menu.addAction('Save session as...', self.save_session_as)
-        self.recent_menu = self.session_menu.addMenu('Recent sessions')
-        self.recent_menu.aboutToShow.connect(self.fill_recent)
-        for a in (self.a_sess_open, self.a_sess_save):
-            self.addAction(a)                                  # shortcuts work without the menu open
-        sess_btn = QtWidgets.QToolButton()
-        sess_btn.setText('Session')
-        sess_btn.setIcon(self.style().standardIcon(QtWidgets.QStyle.StandardPixmap.SP_DirIcon))
-        sess_btn.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
-        sess_btn.setPopupMode(QtWidgets.QToolButton.ToolButtonPopupMode.InstantPopup)
-        sess_btn.setMenu(self.session_menu)
-        sess_btn.setToolTip('Save the whole session (all scans, boxes and undo history) to a file, or open one')
-        for a in (self.a_save, self.a_save_all, None):
+        for a in (self.a_save, self.a_save_all, None, self.a_new_session, None):
             tb.addSeparator() if a is None else tb.addAction(a)
-        tb.addWidget(sess_btn)
-        tb.addSeparator()
         for a in (self.a_settings,):
             tb.addSeparator() if a is None else tb.addAction(a)
         help_btn = QtWidgets.QToolButton()
@@ -1262,8 +1332,13 @@ class MainWindow(QtWidgets.QMainWindow):
         rm = QtWidgets.QPushButton('Remove from session')
         rm.setToolTip('Forget the selected scan (files already saved stay on disk)')
         rm.clicked.connect(self.remove_page)
+        new = QtWidgets.QPushButton(self.style().standardIcon(QtWidgets.QStyle.StandardPixmap.SP_FileIcon),
+                                    'New session')
+        new.setToolTip(self.a_new_session.toolTip())
+        new.clicked.connect(self.new_session)
         lay.addWidget(self.session, 1)
         lay.addWidget(rm)
+        lay.addWidget(new)
         dock.setWidget(w)
         self.addDockWidget(Qt.DockWidgetArea.LeftDockWidgetArea, dock)
 
@@ -1289,8 +1364,14 @@ class MainWindow(QtWidgets.QMainWindow):
         save_btn = QtWidgets.QPushButton(self.style().standardIcon(QtWidgets.QStyle.StandardPixmap.SP_DialogSaveButton),
                                          'Save')
         save_btn.clicked.connect(self.save)
+        self.full_check = QtWidgets.QCheckBox('Also save the full scan')
+        self.full_check.setChecked(self.cfg['split']['save_full_scan'])
+        self.full_check.setToolTip('Save the whole scan (NAME.EXT) next to the cut-outs of the boxes. '
+                                   'A scan without boxes is always saved whole. (Settings > Split)')
+        self.full_check.toggled.connect(self.full_scan_toggled)
         lay.addWidget(self.thumbs, 1)
         lay.addWidget(self.next_label)
+        lay.addWidget(self.full_check)
         lay.addWidget(save_btn)
         dock.setWidget(w)
         self.addDockWidget(Qt.DockWidgetArea.RightDockWidgetArea, dock)
@@ -1324,7 +1405,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def update_actions(self):
         busy = self.worker is not None
         has = self.page is not None
-        for a in (self.a_scan, self.a_open, self.a_settings):
+        for a in (self.a_scan, self.a_open, self.a_settings, self.a_new_session, self.a_bg_scan):
             a.setEnabled(not busy)
         if hasattr(self, 'a_scan_as'):
             self.a_scan_as.setEnabled(not busy and bool(self.prefix()))
@@ -1558,7 +1639,7 @@ class MainWindow(QtWidgets.QMainWindow):
         page.hint = hint                   # how to detect objects: see detect_job
         page.prefix = prefix               # file names PREFIX_001 ... ('' = output.name pattern)
         self.pages.append(page)
-        self.mark_modified()
+        self.store_page(page)
         it = QtWidgets.QListWidgetItem(QtGui.QIcon(page.thumb), '')
         it.setData(Qt.ItemDataRole.UserRole, page)
         self.session.addItem(it)
@@ -1594,8 +1675,8 @@ class MainWindow(QtWidgets.QMainWindow):
             if r != QtWidgets.QMessageBox.StandardButton.Discard:
                 return
         self.pages.pop(row)
+        page.delete_files()
         self.mark_modified()
-        page.drop_files()
         self.session.blockSignals(True)
         self.session.takeItem(row)
         self.session.blockSignals(False)
@@ -1632,6 +1713,7 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             self.commit('new')                    # history[0]: no boxes yet
         self.view.fit()
+        self.meta_timer.start()                   # remember which scan is shown
         self.step_label.setText(f'{page.label}: {w} x {h} px = {w / DPI * 25.4:.0f} x {h / DPI * 25.4:.0f} mm')
         self.update_next_name()
         self.thumb_timer.start()
@@ -1728,10 +1810,48 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.detected(rects)
             if then:
                 then()
+        background = None
+        if self.cfg['detection']['background'] == 'scanned':
+            background = crop.load_background(page.image().shape)
+            if background is None:
+                self.status_note = 'no stored background for this scan size (Scan > Scan background...)'
         self.run_worker(detect_job, (page.image(), self.cfg['detection'], roi, getattr(page, 'hint', None),
-                                     self.cfg), done, 'Finding objects')
+                                     self.cfg, background), done, 'Finding objects')
+
+    def scan_background(self):
+        """Scan the empty mat/desk and store it; detection then compares each scan with it."""
+        if self.worker:
+            return
+        r = QtWidgets.QMessageBox.question(
+            self, 'Scan background',
+            'Take everything off the mat (or desk) and keep the scanner and mat where they are.\n\n'
+            'The empty background is scanned and stored. Detection then finds objects by comparing each '
+            'scan with it (Settings > Detection > Background is set to "scanned"). Scan again whenever '
+            'the mat, the scanner or the light around it changes.',
+            QtWidgets.QMessageBox.StandardButton.Ok | QtWidgets.QMessageBox.StandardButton.Cancel)
+        if r != QtWidgets.QMessageBox.StandardButton.Ok:
+            return
+        self.cancel_countdown()
+        self.scanner_label.setText('Scanner: scanning')
+        self.run_worker(scan_job, (json.loads(json.dumps(self.cfg)),), self.background_scanned,
+                        'Scanning the background', uses_scanner=True)
+
+    def background_scanned(self, result):
+        image, _ = result
+        try:
+            crop.save_background(image)
+        except OSError as e:
+            QtWidgets.QMessageBox.warning(self, 'Scan background', f'Cannot store the background:\n{e}')
+            return
+        self.cfg['detection']['background'] = 'scanned'
+        try:
+            settings.save(self.cfg)
+        except (OSError, ValueError):
+            pass
+        self.step_label.setText(f'Background stored ({paths.BACKGROUND_FILE}); detection now compares with it')
 
     def detected(self, rects):
+        note, self.status_note = getattr(self, 'status_note', None), None
         for b in self.boxes:
             self.scene.removeItem(b)
         self.boxes = []
@@ -1740,8 +1860,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.add_box(*crop.box_from_rect(r, margin))
         self.commit('detect')
         n = len(rects)
-        self.step_label.setText(f'{n} object(s) found' if n else
-                                'No objects found: draw boxes by dragging on the scan, or adjust the work area')
+        self.step_label.setText((f'{n} object(s) found' if n else
+                                 'No objects found: draw boxes by dragging on the scan, or adjust the work area')
+                                + (f' ({note})' if note else ''))
 
     def add_box(self, cx, cy, w, h, angle=0.0, quarter=0, name='', height=None):
         if height is None:
@@ -1809,6 +1930,13 @@ class MainWindow(QtWidgets.QMainWindow):
             self.commit('finerot')
             return
         super().keyPressEvent(e)
+
+    def full_scan_toggled(self, on):
+        self.cfg['split']['save_full_scan'] = on
+        try:
+            settings.save(self.cfg)
+        except (OSError, ValueError):
+            pass
 
     def toolbar_height_changed(self, v):
         v = round(v * 10, 1)                                # cm in the box, mm inside
@@ -1955,6 +2083,8 @@ class MainWindow(QtWidgets.QMainWindow):
             page.source = full[0]
             if page is not self.page:
                 page.drop_files()
+        elif page.source not in files:             # full scan not saved this time (old one removed)
+            page.source = None
         self.mark_modified()
         self.update_session_item(page)
         self.update_next_name()
@@ -1985,6 +2115,9 @@ class MainWindow(QtWidgets.QMainWindow):
             self.height_box.blockSignals(True)
             self.height_box.setValue(self.cfg['split']['object_height_mm'] / 10)
             self.height_box.blockSignals(False)
+            self.full_check.blockSignals(True)
+            self.full_check.setChecked(self.cfg['split']['save_full_scan'])
+            self.full_check.blockSignals(False)
             self.apply_display_settings()
             self.thumb_timer.start()
             self.update_next_name()
@@ -2000,152 +2133,183 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.start_watcher()
             self.step_label.setText('Settings saved' + (': ' + '; '.join(notes) if notes else ''))
 
-    # ---- session files
+    # ---- session (kept in paths.SESSION_DIR, written after every scan and change)
     def mark_modified(self):
-        if not self.session_modified:
-            self.session_modified = True
+        self.meta_timer.start()
         self.update_title()
 
     def update_title(self):
-        name = os.path.basename(self.session_path) if self.session_path else 'unsaved session'
-        star = ' *' if self.session_modified and self.pages else ''
-        self.setWindowTitle(f'{name}{star} - SV600 Scanner {__version__}')
+        n = len(self.pages)
+        what = f'Session: {n} scan{"" if n == 1 else "s"}' + ('' if self.persistent else ' (temporary)')
+        self.setWindowTitle(f'{what} - SV600 Scanner {__version__}')
 
-    def confirm_leave_session(self, what):
-        """True if it is fine to drop the current session (saved, or the user says so)."""
-        if not self.pages or not self.session_modified:
-            return True
-        unsaved = sum(1 for p in self.pages if p.dirty)
-        text = 'This session has changes that are not in a session file.'
-        if unsaved:
-            text += f' {unsaved} scan(s) have also not been saved as images.'
-        box = QtWidgets.QMessageBox(QtWidgets.QMessageBox.Icon.Question, what, text, parent=self)
-        save = box.addButton('Save session', QtWidgets.QMessageBox.ButtonRole.AcceptRole)
-        box.addButton(QtWidgets.QMessageBox.StandardButton.Discard)
-        box.addButton(QtWidgets.QMessageBox.StandardButton.Cancel)
-        box.setDefaultButton(save)
+    def store_page(self, page):
+        """Put a new scan into the session folder (lossless, in the background) and note it."""
+        hint = page.hint if isinstance(page.hint, np.ndarray) else None
+        fut = self.storer.submit(session.store_page, self.session_dir, page.number, page.image(), page.small, hint)
+        fut.add_done_callback(lambda f, p=page: self.stored.emit(p, f.exception() or f.result()))
+        self.mark_modified()
+
+    def page_stored(self, page, result):
+        if isinstance(result, BaseException):
+            if page in self.pages:
+                self.step_label.setText(f'Could not keep {page.label} in the session folder: {result}')
+            return
+        page.png_path, page.small_path, page.det_png = result['png'], result['small'], result['det']
+        if page not in self.pages:                 # removed (or a new session started) meanwhile
+            page.delete_files()
+            return
+        page.drop_files()                          # the PNG replaces a parked copy
+        self.write_session()
+
+    def write_session(self):
+        """Write session.json: which scans there are, their boxes, undo history, saved state."""
+        self.meta_timer.stop()
+        if not self.persistent:
+            return
+        pages = [p for p in self.pages if p.png_path]           # scans still being stored come next time
+        try:
+            session.write(self.session_dir, {
+                'current': pages.index(self.page) if self.page in pages else 0,
+                'scan_count': self.scan_count, 'page_serial': getattr(self, 'page_serial', 0),
+                'pages': [p.meta() for p in pages]})
+        except OSError as e:
+            self.step_label.setText(f'Could not write the session: {e}')
+
+    def attach_session(self):
+        """At startup: use the session folder that survives closing the program, and offer to
+        continue the session found there."""
+        import shutil
+        lock = session.lock(paths.SESSION_DIR)
+        if lock is None:
+            QtWidgets.QMessageBox.warning(
+                self, 'Session', 'Another SV600 Scanner window is using the session. The scans made in '
+                'this window are kept only until it is closed.')
+            return
+        shutil.rmtree(self.session_dir, ignore_errors=True)
+        self.session_lock, self.session_dir, self.persistent = lock, paths.SESSION_DIR, True
+        try:
+            meta = session.read(self.session_dir)
+        except (OSError, ValueError) as e:
+            QtWidgets.QMessageBox.warning(self, 'Session', f'The previous session cannot be read:\n{e}')
+            meta = None
+        if meta and meta['pages'] and self.ask_continue(meta):
+            self.load_session(meta)
+        else:
+            if meta:
+                self.page_serial = max(getattr(self, 'page_serial', 0), meta.get('page_serial', 0))
+            self.clear_session()
+        self.update_title()
+
+    def ask_continue(self, meta):
+        """Continue the stored session? Starting a new one deletes its scans: asked twice."""
+        n, unsaved = len(meta['pages']), session.unsaved(meta)
+        Q = QtWidgets.QMessageBox
+        while True:
+            box = Q(Q.Icon.Question, 'Previous session',
+                    f'There is a session from {meta.get("saved", "earlier")} with {n} scan(s)'
+                    + (f', {unsaved} of them not saved as images.' if unsaved else ', all saved as images.')
+                    + '\n\nLoad it?', parent=self)
+            load = box.addButton('Load session', Q.ButtonRole.AcceptRole)
+            box.addButton('Start a new session', Q.ButtonRole.DestructiveRole)
+            box.setDefaultButton(load)
+            box.setEscapeButton(load)
+            box.exec()
+            if box.clickedButton() is load:
+                return True
+            if self.confirm_delete(n, unsaved, 'Start a new session'):
+                return False
+
+    def confirm_delete(self, n, unsaved, title):
+        Q = QtWidgets.QMessageBox
+        box = Q(Q.Icon.Warning, title,
+                f'The {n} scan(s) of the session will be deleted and a new, empty session created.'
+                + (f'\n\n{unsaved} scan(s) have not been saved as images and will be lost.' if unsaved else '')
+                + '\n\nImages already saved to your output folder are not affected.', parent=self)
+        delete = box.addButton('Delete and start new', Q.ButtonRole.DestructiveRole)
+        cancel = box.addButton(Q.StandardButton.Cancel)
+        box.setDefaultButton(cancel)
         box.exec()
-        if box.clickedButton() is save:
-            self.save_session(then=lambda: self.close() if what == 'Quit' else None)
-            return False                       # continue once the save has finished
-        return box.standardButton(box.clickedButton()) == QtWidgets.QMessageBox.StandardButton.Discard
+        return box.clickedButton() is delete
 
-    def session_folder(self):
-        recent = self.state.get('recent_sessions') or []
-        if recent:
-            return os.path.dirname(recent[0])
-        return os.path.join(os.path.expanduser(self.cfg['output']['folder']), 'sessions')
-
-    def remember_session(self, path):
-        recent = [p for p in self.state.get('recent_sessions', []) if p != path]
-        self.state['recent_sessions'] = [path] + recent[:7]
-        save_state(self.state)
-
-    def fill_recent(self):
-        self.recent_menu.clear()
-        recent = [p for p in self.state.get('recent_sessions', []) if os.path.exists(p)]
-        for p in recent:
-            self.recent_menu.addAction(os.path.basename(p), lambda p=p: self.open_session(p)).setToolTip(p)
-        if not recent:
-            self.recent_menu.addAction('(none)').setEnabled(False)
-
-    def save_session_as(self, then=None):
-        if self.worker or not self.pages:
-            return
-        folder = self.session_folder()
-        os.makedirs(folder, exist_ok=True)
-        default = self.session_path or os.path.join(folder, time.strftime('session_%Y-%m-%d_%H%M') + session.EXT)
-        path, _ = QtWidgets.QFileDialog.getSaveFileName(self, 'Save session', default,
-                                                        f'SV600 sessions (*{session.EXT})')
-        if not path:
-            return
-        if not path.endswith(session.EXT):
-            path += session.EXT
-        self.session_path = path
-        self.save_session(then=then)
-
-    def save_session(self, then=None):
-        if self.worker or not self.pages:
-            return
-        if not self.session_path:
-            self.save_session_as(then=then)
-            return
-        current = self.pages.index(self.page) if self.page in self.pages else 0
-
-        def done(_):
-            self.session_modified = False
-            self.remember_session(self.session_path)
-            self.update_title()
-            self.step_label.setText(f'Session saved: {self.session_path}')
-            if then:
-                then()
-        self.run_worker(save_session_job, (list(self.pages), self.page, self.session_path, current,
-                                           self.session_dir), done, 'Saving session')
+    def load_session(self, meta):
+        pages = []
+        for m in meta['pages']:
+            try:
+                pages.append(Page.restored(m, self.session_dir))
+            except (OSError, KeyError, ValueError) as e:
+                print(f'session: skipping {m.get("label")}: {e}', file=sys.stderr)
+        session.clean(self.session_dir, {os.path.basename(f) for p in pages
+                                         for f in (p.png_path, p.det_png, p.small_path) if f})
+        self.page_serial = max([meta.get('page_serial', 0)] + [p.number for p in pages])
+        self.scan_count = meta.get('scan_count', len(pages))
+        for page in pages:
+            self.pages.append(page)
+            it = QtWidgets.QListWidgetItem(QtGui.QIcon(page.thumb), '')
+            it.setData(Qt.ItemDataRole.UserRole, page)
+            self.session.addItem(it)
+            self.update_session_item(page)
+        if self.pages:
+            cur = self.pages[min(max(meta.get('current', 0), 0), len(self.pages) - 1)]
+            self.session.blockSignals(True)
+            self.session.setCurrentRow(self.pages.index(cur))
+            self.session.blockSignals(False)
+            self.show_page(cur)
+        self.write_session()
+        self.update_title()
+        self.step_label.setText(f'Session loaded: {len(self.pages)} scan(s)')
 
     def clear_session(self):
         for p in self.pages:
-            p.drop_files()
+            p.delete_files()
         self.pages, self.page = [], None
         self.session.blockSignals(True)
         self.session.clear()
         self.session.blockSignals(False)
         self.scan_count = 0
-        self.session_path, self.session_modified = None, False
+        if self.persistent:
+            session.clean(self.session_dir)
+        self.write_session()
         self.show_placeholder()
         self.update_next_name()
         self.update_title()
 
     def new_session(self):
-        if self.worker or not self.confirm_leave_session('New session'):
+        if self.worker:
             return
+        if self.pages and not self.confirm_delete(len(self.pages), sum(p.dirty for p in self.pages), 'New session'):
+            return
+        self.stop_continuous()
         self.clear_session()
-
-    def open_session(self, path=None):
-        if self.worker or not self.confirm_leave_session('Open session'):
-            return
-        if not path:
-            path, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Open session', self.session_folder(),
-                                                            f'SV600 sessions (*{session.EXT})')
-            if not path:
-                return
-
-        def done(result):
-            pages, current = result
-            self.clear_session()
-            for i, (meta, png, det, small, size) in enumerate(pages, 1):
-                self.page_serial = getattr(self, 'page_serial', 0) + 1
-                page = Page.restored(meta, png, det, small, size, self.session_dir, self.page_serial)
-                self.pages.append(page)
-                it = QtWidgets.QListWidgetItem(QtGui.QIcon(page.thumb), '')
-                it.setData(Qt.ItemDataRole.UserRole, page)
-                self.session.addItem(it)
-                self.update_session_item(page)
-            self.scan_count = len(self.pages)
-            if self.pages:
-                cur = self.pages[min(max(current, 0), len(self.pages) - 1)]
-                self.session.blockSignals(True)
-                self.session.setCurrentRow(self.pages.index(cur))
-                self.session.blockSignals(False)
-                self.show_page(cur)
-            self.session_path, self.session_modified = path, False
-            self.remember_session(path)
-            self.update_title()
-            self.step_label.setText(f'Session opened: {len(self.pages)} scan(s) from {path}')
-        self.run_worker(open_session_job, (path, self.session_dir), done, f'Opening session {path}')
+        self.step_label.setText('New session started')
 
     def closeEvent(self, e):
         if self.worker:
             e.ignore()
             return
-        if not self.confirm_leave_session('Quit'):
-            e.ignore()
-            return
+        if not self.persistent and any(p.dirty for p in self.pages):
+            r = QtWidgets.QMessageBox.question(
+                self, 'Quit', 'This window\'s session is temporary: scans not saved as images will be lost. Quit?',
+                QtWidgets.QMessageBox.StandardButton.Discard | QtWidgets.QMessageBox.StandardButton.Cancel)
+            if r != QtWidgets.QMessageBox.StandardButton.Discard:
+                e.ignore()
+                return
         self.cancel_countdown()
         self.stop_watcher()
         self.state['geometry'] = bytes(self.saveGeometry().toBase64()).decode()
         save_state(self.state)
-        import shutil
-        shutil.rmtree(self.session_dir, ignore_errors=True)
+        if self.storer is not None:
+            self.step_label.setText('Finishing the session...')
+            QtWidgets.QApplication.processEvents()
+            self.storer.shutdown(wait=True)            # scans still being written into the session
+            QtWidgets.QApplication.processEvents()     # deliver their "stored" signals
+            self.storer = None
+        self.write_session()
+        if self.persistent:
+            self.session_lock.close()
+        else:
+            import shutil
+            shutil.rmtree(self.session_dir, ignore_errors=True)
         e.accept()
 
 
@@ -2197,7 +2361,7 @@ def load_job(progress, path, cfg):
     return np.ascontiguousarray(img), os.path.basename(path), hint
 
 
-def detect_job(progress, image, det, roi, hint=None, cfg=None):
+def detect_job(progress, image, det, roi, hint=None, cfg=None, background=None):
     progress.step('Finding objects')
     small = hint if isinstance(hint, np.ndarray) else None
     prepare = None
@@ -2205,7 +2369,7 @@ def detect_job(progress, image, det, roi, hint=None, cfg=None):
         from . import correct as corr
         cal = corr.Calibration(paths.calibration_file(cfg['correction']['calibration']))
         prepare = lambda im: corr.unapply_colour(im, cal)
-    rects, _ = crop.find_objects(image, det, roi=roi, prepare=prepare, small=small)
+    rects, _ = crop.find_objects(image, det, roi=roi, prepare=prepare, small=small, background=background)
     return rects
 
 
@@ -2243,48 +2407,6 @@ def save_job(progress, image, jobs, base, cfg, save_full, old_files=(), coloured
     return files
 
 
-def save_session_job(progress, pages, shown, path, current, cache_dir):
-    """Encode scans not yet in the session cache (lossless PNG, once), then write the file."""
-    todo = [p for p in pages if not (p.png_path and os.path.exists(p.png_path))]
-    for i, p in enumerate(todo, 1):
-        progress.step(f'Encoding scan {i} of {len(todo)} (lossless, once per scan)')
-        progress.bar(i - 1, len(todo))
-        path_png = os.path.join(cache_dir, f'session_page{p.number:04d}.png')
-        was_loaded = p._image is not None
-        session.encode_png(p.image(), path_png)
-        p.png_path = path_png
-        if not was_loaded and p is not shown:
-            p._image = None                       # keep memory low: only the shown scan stays loaded
-        if os.path.exists(p.park_path) and p is not shown:
-            p.drop_files()                        # the PNG replaces the parked copy
-    for p in pages:
-        if isinstance(p.hint, np.ndarray) and not (p.det_png and os.path.exists(p.det_png)):
-            p.det_png = os.path.join(cache_dir, f'session_page{p.number:04d}_det.png')
-            session.encode_png(p.hint, p.det_png)
-    progress.step('Writing the session file')
-    os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
-    session.save(path, [{'meta': p.meta(), 'png': p.png_path,
-                         'det_png': p.det_png if isinstance(p.hint, np.ndarray) else None} for p in pages],
-                 current, lambda i, n: progress.bar(i, n))
-    return path
-
-
-def open_session_job(progress, path, cache_dir):
-    """Read a session file: extract each scan, make its thumbnail copy, free the full image."""
-    import cv2
-    progress.step('Reading the session file')
-    pages, current = session.load(path, cache_dir, lambda i, n: progress.bar(i, n))
-    out = []
-    for i, p in enumerate(pages, 1):
-        progress.step(f'Loading scan {i} of {len(pages)}')
-        progress.bar(i - 1, len(pages))
-        img = session.read_png(p['png'])
-        small = cv2.resize(img, None, fx=0.25, fy=0.25, interpolation=cv2.INTER_AREA)
-        out.append((p['meta'], p['png'], p['det'], small, (img.shape[1], img.shape[0])))
-        del img
-    return out, current
-
-
 def main():
     QtWidgets.QApplication.setApplicationName('SV600 Scanner')
     QtWidgets.QApplication.setDesktopFileName('sv600-scanner')
@@ -2292,6 +2414,7 @@ def main():
     app.setWindowIcon(QtGui.QIcon(os.path.join(paths.DATA_DIR, 'sv600-scanner.png')))
     w = MainWindow()
     w.show()
+    w.attach_session()
     if len(sys.argv) > 1 and os.path.exists(sys.argv[1]):
         w.run_worker(load_job, (sys.argv[1], w.cfg), w.loaded, f'Opening {sys.argv[1]}')
     sys.exit(app.exec())

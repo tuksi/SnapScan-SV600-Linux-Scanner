@@ -68,8 +68,6 @@ def scan_main(argv=None):
         ap.error('quality must be between 1 and 100')
     if split and not correct:
         ap.error('split needs the corrected image; turn correction on')
-    if margin < 0:
-        ap.error('margin must not be negative')
 
     from .console import ConsoleProgress
     from .scanner import SV600, ScannerError
@@ -128,8 +126,9 @@ def scan_main(argv=None):
     from . import crop
     ui.step('Finding objects (edges and non-desk colour)')
     full = np.asarray(img)
+    bg = crop.load_background(full.shape) if cfg['detection']['background'] == 'scanned' else None
     rects, _ = ui.run_with_spinner('detecting', crop.find_objects, full, cfg['detection'],
-                                   None, None, None, det_small)
+                                   None, None, None, det_small, bg)
     try:
         k = crop.height_scale(height, cfg['correction']['head_height_mm'] or cal.head_height)
     except ValueError as e:

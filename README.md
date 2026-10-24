@@ -11,10 +11,10 @@ dragging a corner); the right-hand panel shows the straightened cut-outs that wi
 ## Run
 
 ```
-chmod +x SV600_Scanner-1.0.0-x86_64.AppImage
-./SV600_Scanner-1.0.0-x86_64.AppImage                 # GUI
-./SV600_Scanner-1.0.0-x86_64.AppImage scan --split    # scan from the command line
-./SV600_Scanner-1.0.0-x86_64.AppImage help            # all commands
+chmod +x SV600_Scanner-1.1.0-x86_64.AppImage
+./SV600_Scanner-1.1.0-x86_64.AppImage                 # GUI
+./SV600_Scanner-1.1.0-x86_64.AppImage scan --split    # scan from the command line
+./SV600_Scanner-1.1.0-x86_64.AppImage help            # all commands
 ```
 
 Needs a 64-bit Intel/AMD PC with Linux from about 2022 on (glibc 2.34 or newer: Ubuntu 22.04,
@@ -34,20 +34,22 @@ that installs a udev rule (needed once per computer on some distros).
 | Continuous scanning | **Ctrl+K** (toolbar *Continuous*): after each scan get ready for the next one; with a timer (Settings > Continuous) it scans by itself, otherwise press the scanner's button / Space per page; optional auto-save. **Esc** stops |
 | Undo / redo | **Ctrl+Z** / **Ctrl+Shift+Z** (or Ctrl+Y): box edits, turns, deletes, work area, Detect |
 | Session | every scan is listed on the left (green = saved, red = unsaved); click to go back and edit it. **Ctrl+Shift+S** saves all unsaved |
-| Session files | toolbar **Session** menu: **Save session (Ctrl+E)** / Save as / **Open session (Ctrl+Shift+O)** / New / Recent. One `.sv600session` file holds every scan (lossless), its boxes, names, heights, prefix, saved state and undo history. First save encodes each scan once (~4 s per scan), later saves take a moment. ~35-40 MB per scan. Title shows `*` for unsaved session changes |
+| Session kept | the session (every scan, its boxes, names, heights, prefix, saved state and undo history) is kept in `~/.local/share/sv600-linux/session/` and written after every scan and change; nothing to save by hand. At the next start the app asks whether to load it; starting a new one instead warns first, then deletes those scans (images you saved stay). Each scan is stored once, lossless (~35-40 MB) |
+| New session | **Ctrl+N**, toolbar or below the session list: after a warning, deletes the scans of this session and starts an empty one |
 | Open an existing scan | **Ctrl+O** (raw 5572x4429 frames are corrected on load) |
 | Zoom / pan | mouse wheel / drag with right or middle button, **F** = fit |
 | Work area | drag the yellow dashed edges; outside is ignored by detection; remembered |
 | Find objects | **D** (also runs automatically after each scan) |
+| Scan background | the **arrow next to Scan** > *Scan background...*: scan the empty mat or desk once; detection then finds objects by comparing each scan with it (Settings > Detection > Background = `scanned`). Scan it again when the mat, scanner or light change |
 | New box | drag on an empty spot |
-| Move / resize / rotate box | drag inside / drag a square handle / drag the round handle (Shift = 15 deg steps) |
+| Move / resize / rotate box | drag inside / drag a square handle / drag the round handle (hold **Shift** = fine rotation, 10x slower; **Ctrl** = 15 deg steps; the angle is shown while rotating) |
 | Magnifier | appears while dragging a corner/edge handle, a work-area handle or drawing a box (Settings > Display) |
 | Fine rotate, nudge | **[** **]** = 0.25 deg, arrow keys (Shift = bigger steps) |
 | Turn output 90 deg | **R** / **Shift+R** (thick bar = edge that becomes the top) |
 | Object preview | **double-click** a box or its thumbnail: the object large, exactly as saved; Rotate left/right (**R** / **Shift+R**), Previous/Next (**PgUp/PgDown**), file name field (empty = automatic name; an existing file of the same name gets _2) |
 | Raised objects | **Height** box in the toolbar (applies to the selected boxes, or all boxes if none are selected, and stays as the default), or per object in the preview: **Height above desk** (e.g. 4,0 cm for a closed 4 cm book; cm, 0,1 cm steps): it is saved at true size instead of ~12 % too big. Default for new boxes: Settings > Split > Object height; command line: `scan --split --height 40` |
 | Delete box | **Delete** |
-| Save | **Ctrl+S**: NAME_1, NAME_2, ... per box (+ full scan if enabled); saving a scan again overwrites its own files |
+| Save | **Ctrl+S**: NAME_1, NAME_2, ... per box (+ the full scan if **Also save the full scan** under the thumbnails is ticked; a scan without boxes is always saved whole); saving a scan again overwrites its own files |
 | Settings | **Ctrl+,** (hover a setting for an explanation) |
 
 The right-hand panel shows exactly what will be saved, and the next file name.

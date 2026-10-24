@@ -5,6 +5,7 @@ user changes goes to the XDG config/cache folders:
   ~/.config/sv600-linux/sv600_calibration.json  this scanner's calibration (optional)
   ~/.config/sv600-linux/state.json             GUI state (work area, window size)
   ~/.cache/sv600-linux/                        precomputed correction maps
+  ~/.local/share/sv600-linux/session/          the GUI session (scans, boxes, undo history)
 """
 import os
 
@@ -14,11 +15,14 @@ DATA_DIR = os.path.join(PKG_DIR, 'data')
 
 CONFIG_DIR = os.path.join(os.environ.get('XDG_CONFIG_HOME') or os.path.expanduser('~/.config'), APP)
 CACHE_DIR = os.path.join(os.environ.get('XDG_CACHE_HOME') or os.path.expanduser('~/.cache'), APP)
+DATA_HOME = os.path.join(os.environ.get('XDG_DATA_HOME') or os.path.expanduser('~/.local/share'), APP)
+SESSION_DIR = os.path.join(DATA_HOME, 'session')
 
 SETTINGS_FILE = os.path.join(CONFIG_DIR, 'settings.toml')
 SETTINGS_TEMPLATE = os.path.join(DATA_DIR, 'settings.toml')
 STATE_FILE = os.path.join(CONFIG_DIR, 'state.json')
 USER_CALIBRATION = os.path.join(CONFIG_DIR, 'sv600_calibration.json')
+BACKGROUND_FILE = os.path.join(CONFIG_DIR, 'background.png')   # the empty mat/desk, see crop
 BUNDLED_CALIBRATION = os.path.join(DATA_DIR, 'sv600_calibration.json')
 
 
